@@ -1,0 +1,1039 @@
+R(3):ERROR:105: Unable to locate a modulefile for 'R/3.5.0'
+gcc(4):ERROR:105: Unable to locate a modulefile for 'gcc/5.1.0'
+Warning message:
+In RNGkind(sample.kind = "Rounding") : non-uniform 'Rounding' sampler used
+Loading celda
+Re-compiling celda
+  -  installing *source* package 'celda' ... (965ms)
+     ** using staged installation
+     ** libs
+     g++ -std=gnu++11 -I"/share/pkg.7/r/3.6.0/install/lib64/R/include" -DNDEBUG  -I"/share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include" -I"/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include" -I/usr/local/include  -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -c RcppExports.cpp -o RcppExports.o
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:392,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:60:39: warning: ignoring attributes on template argument '__m128' {aka '__vector(4) float'} [-Wignored-attributes]
+    template<> struct is_arithmetic<__m128>  { enum { value = true }; };
+                                          ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:61:40: warning: ignoring attributes on template argument '__m128i' {aka '__vector(2) long long int'} [-Wignored-attributes]
+    template<> struct is_arithmetic<__m128i> { enum { value = true }; };
+                                           ^
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:62:40: warning: ignoring attributes on template argument '__m128d' {aka '__vector(2) double'} [-Wignored-attributes]
+    template<> struct is_arithmetic<__m128d> { enum { value = true }; };
+                                           ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:161:43: warning: ignoring attributes on template argument 'Eigen::internal::Packet4f' {aka '__vector(4) float'} [-Wignored-attributes]
+    template<> struct unpacket_traits<Packet4f> { typedef float  type; enum {size=4, alignment=Aligned16}; typedef Packet4f half; };
+                                              ^
+   In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:392,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:162:43: warning: ignoring attributes on template argument 'Eigen::internal::Packet2d' {aka '__vector(2) double'} [-Wignored-attributes]
+    template<> struct unpacket_traits<Packet2d> { typedef double type; enum {size=2, alignment=Aligned16}; typedef Packet2d half; };
+                                              ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:163:43: warning: ignoring attributes on template argument 'Eigen::internal::Packet4i' {aka '__vector(2) long long int'} [-Wignored-attributes]
+    template<> struct unpacket_traits<Packet4i> { typedef int    type; enum {size=4, alignment=Aligned16}; typedef Packet4i half; };
+                                                                           ^
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:718:35: warning: ignoring attributes on template argument 'Eigen::internal::Packet4f' {aka '__vector(4) float'} [-Wignored-attributes]
+    struct palign_impl<Offset,Packet4f>
+                                      ^
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:741:35: warning: ignoring attributes on template argument 'Eigen::internal::Packet4i' {aka '__vector(2) long long int'} [-Wignored-attributes]
+    struct palign_impl<Offset,Packet4i>
+                                      ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:764:35: warning: ignoring attributes on template argument 'Eigen::internal::Packet2d' {aka '__vector(2) double'} [-Wignored-attributes]
+    struct palign_impl<Offset,Packet2d>
+                                      ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:778:34: warning: ignoring attributes on template argument 'Eigen::internal::Packet4f' {aka '__vector(4) float'} [-Wignored-attributes]
+    ptranspose(PacketBlock<Packet4f,4>& kernel) {
+                                     ^
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:783:34: warning: ignoring attributes on template argument 'Eigen::internal::Packet2d' {aka '__vector(2) double'} [-Wignored-attributes]
+    ptranspose(PacketBlock<Packet2d,2>& kernel) {
+                                     ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/PacketMath.h:790:34: warning: ignoring attributes on template argument 'Eigen::internal::Packet4i' {aka '__vector(2) long long int'} [-Wignored-attributes]
+    ptranspose(PacketBlock<Packet4i,4>& kernel) {
+                                     ^
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:374,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/Default/ConjHelper.h:15:70: warning: ignoring attributes on template argument 'Eigen::internal::Packet4f' {aka '__vector(4) float'} [-Wignored-attributes]
+      template<> struct conj_helper<PACKET_REAL, PACKET_CPLX, false,false> {                                          \
+                                                                         ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/Complex.h:232:1: note: in expansion of macro 'EIGEN_MAKE_CONJ_HELPER_CPLX_REAL'
+    EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/Default/ConjHelper.h:22:70: warning: ignoring attributes on template argument 'Eigen::internal::Packet4f' {aka '__vector(4) float'} [-Wignored-attributes]
+      template<> struct conj_helper<PACKET_CPLX, PACKET_REAL, false,false> {                                          \
+                                                                         ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/Complex.h:232:1: note: in expansion of macro 'EIGEN_MAKE_CONJ_HELPER_CPLX_REAL'
+    EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/Default/ConjHelper.h:15:70: warning: ignoring attributes on template argument 'Eigen::internal::Packet2d' {aka '__vector(2) double'} [-Wignored-attributes]
+      template<> struct conj_helper<PACKET_REAL, PACKET_CPLX, false,false> {                                          \
+                                                                         ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/Complex.h:417:1: note: in expansion of macro 'EIGEN_MAKE_CONJ_HELPER_CPLX_REAL'
+    EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet1cd,Packet2d)
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/Default/ConjHelper.h:22:70: warning: ignoring attributes on template argument 'Eigen::internal::Packet2d' {aka '__vector(2) double'} [-Wignored-attributes]
+      template<> struct conj_helper<PACKET_CPLX, PACKET_REAL, false,false> {                                          \
+                                                                         ^
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/arch/SSE/Complex.h:417:1: note: in expansion of macro 'EIGEN_MAKE_CONJ_HELPER_CPLX_REAL'
+    EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet1cd,Packet2d)
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:367,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h: In instantiation of 'struct Eigen::internal::find_best_packet<float, 4>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:22:57:   required from 'struct Eigen::internal::traits<Eigen::Matrix<float, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:224:7:   required from 'struct Eigen::internal::traits<Eigen::Quaternion<float> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/arch/Geometry_SSE.h:24:46:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:44: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<float>::type' {aka '__vector(4) float'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                                          ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<float>::type' {aka '__vector(4) float'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<float>::type' {aka '__vector(4) float'} [-Wignored-attributes]
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::unpacket_traits<__vector(4) float>::half' {aka '__vector(4) float'} [-Wignored-attributes]
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:188:88: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<float>::type' {aka '__vector(4) float'} [-Wignored-attributes]
+      typedef typename find_best_packet_helper<Size,typename packet_traits<T>::type>::type type;
+                                                                                           ^~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:434,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Matrix<float, 4, 1>, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<float, 4, 1>, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<float, 4, 1>, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Matrix<float, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Matrix<float, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<float, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<float, 4, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:46:50:   required from 'class Eigen::QuaternionBase<Eigen::Quaternion<float> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:232:7:   required from 'class Eigen::Quaternion<float>'
+/share/pkg.7/r/3.6.0/i     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/arch/Geometry_SSE.h:27:3:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<float>::type' {aka '__vector(4) float'} [-Wignored-attributes]
+                         >::type PacketReturnType;
+                                 ^~~~~~~~~~~~~~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:367,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h: In instantiation of 'struct Eigen::internal::find_best_packet<double, 4>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:22:57:   required from 'struct Eigen::internal::traits<Eigen::Matrix<double, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:224:7:   required from 'struct Eigen::internal::traits<Eigen::Quaternion<double> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/arch/Geometry_SSE.h:88:47:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:44: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                                          ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::unpacket_traits<__vector(2) double>::half' {aka '__vector(2) double'} [-Wignored-attributes]
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:188:88: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+      typedef typename find_best_packet_helper<Size,typename packet_traits<T>::type>::type type;
+                                                                                           ^~~~
+   In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:434,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, 4, 1>, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, 4, 1>, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, 4, 1>, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Matrix<double, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Matrix<double, 4, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<double, 4, 1> >'
+/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppE     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<double, 4, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:46:50:   required from 'class Eigen::QuaternionBase<Eigen::Quaternion<double> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/Quaternion.h:232:7:   required from 'class Eigen::Quaternion<double>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Geometry/arch/Geometry_SSE.h:92:3:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+                         >::type PacketReturnType;
+                                 ^~~~~~~~~~~~~~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/SparseCore:37,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Sparse:26,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:31,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/SparseCore/SparseMatrixBase.h: In instantiation of 'class Eigen::SparseMatrixBase<Eigen::SparseMatrix<double, 0, int> >':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/SparseCore/SparseCompressedBase.h:36:7:   required from 'class Eigen::SparseCompressedBase<Eigen::SparseMatrix<double, 0, int> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/SparseCore/SparseMatrix.h:96:7:   required from 'class Eigen::SparseMatrix<double, 0, int>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/unsupported/Eigen/src/IterativeSolvers/ConstrainedConjGrad.h:61:25:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/SparseCore/SparseMatrixBase.h:47:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+                         >::type PacketReturnType;
+                                 ^~~~~~~~~~~~~~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:367,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h: In instantiation of 'struct Eigen::internal::find_best_packet<int, -1>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:22:57:   required from 'struct Eigen::internal::traits<Eigen::Matrix<int, -1, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<int, -1, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<int, -1, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h:168:29:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:44: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                                          ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::unpacket_traits<__vector(2) long long int>::half' {aka '__vector(2) long long int'} [-Wignored-attributes]
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:188:88: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+      typedef typename find_best_packet_helper<Size,typename packet_traits<T>::type>::type type;
+                                                                                           ^~~~
+   In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:434,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, 1>, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, 1>, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, 1>, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Matrix<int, -1, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Matrix<int, -1, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<int, -1, 1> >'
+/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/inc     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<int, -1, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h:168:29:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+                         >::type PacketReturnType;
+                                 ^~~~~~~~~~~~~~~~
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Transpose<Eigen::Matrix<int, -1, 1> >, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Transpose<Eigen::Matrix<int, -1, 1> >, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Transpose<Eigen::Matrix<int, -1, 1> >, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Transpose<Eigen::Matrix<int, -1, 1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Transpose<Eigen::Matrix<int, -1, 1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Transpose.h:115:37:   required from 'class Eigen::TransposeImpl<Eigen::Matrix<int, -1, 1>, Eigen::Dense>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Transpose.h:52:37:   required from 'class Eigen::Transpose<Eigen::Matrix<int, -1, 1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h:178:72:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, -1>, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, -1>, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<int, -1, -1>, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Matrix<int, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Matrix<int, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<int, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<int, -1, -1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h:179:36:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:367,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h: In instantiation of 'struct Eigen::internal::find_best_packet<double, -1>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:22:57:   required from 'struct Eigen::internal::traits<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Map.h:18:8:   required from 'struct Eigen::internal::traits<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/ForwardDeclarations.h:32:54:   required from 'struct Eigen::internal::accessors_level<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/ForwardDeclarations.h:113:75:   required from 'class Eigen::Map<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include/Rcpp/InputParameter.h:64:11:   required from 'class Rcpp::ConstInputParameter<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   RcppExports.cpp:105:85:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:44: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+           bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::hal               bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                                          ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+             bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:170:83: warning: ignoring attributes on template argument 'Eigen::internal::unpacket_traits<__vector(2) double>::half' {aka '__vector(2) double'} [-Wignored-attributes]
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/XprHelper.h:188:88: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+      typedef typename find_best_packet_helper<Size,typename packet_traits<T>::type>::type type;
+                                                                                           ^~~~
+     In file included from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Core:434,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/Dense:1,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigenForward.h:30,
+                    from /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/RcppEigen.h:25,
+                    from RcppExports.cpp:4:
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Matrix<double, -1, -1>, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/PlainObjectBase.h:98:7:   required from 'class Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Matrix.h:178:7:   required from 'class Eigen::Matrix<double, -1, -1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Map.h:24:30:   required from 'struct Eigen::internal::traits<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/ForwardDeclarations.h:32:54:   required from 'struct Eigen:     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/ForwardDeclarations.h:32:54:   required from 'struct Eigen::internal::accessors_level<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/util/ForwardDeclarations.h:113:75:   required from 'class Eigen::Map<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include/Rcpp/InputParameter.h:64:11:   required from 'class Rcpp::ConstInputParameter<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   RcppExports.cpp:105:85:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+                         >::type PacketReturnType;
+                                 ^~~~~~~~~~~~~~~~
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<double, -1, -1> >, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<double, -1, -1> >, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<double, -1, -1> >, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MapBase.h:37:34:   required from 'class Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, -1, -1> >, 0>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MapBase.h:215:34:   required from 'class Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, -1, -1> >, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Map.h:94:79:   required from 'class Eigen::Map<Eigen::Matrix<double, -1, -1> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include/Rcpp/InputParameter.h:64:11:   required from 'class Rcpp::ConstInputParameter<Eigen::Map<Eigen::Matrix<double, -1, -1> > >'
+   RcppExports.cpp:105:85:   required from here
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<double>::type' {aka '__vector(2) double'} [-Wignored-attributes]
+     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h: In instantiation of 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >, 0>':
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:300:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:551:7:   required from 'class Eigen::DenseCoeffsBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >, 3>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseBase.h:41:34:   required from 'class Eigen::DenseBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MatrixBase.h:48:34:   required from 'class Eigen::MatrixBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> > >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MapBase.h:37:34:   required from 'class Eigen::MapBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >, 0>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/MapBase.h:215:34:   required from 'class Eigen::MapBase<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >, 1>'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/Map.h:94:79:   required from 'class Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> >'
+   /share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include/Rcpp/InputParameter.h:64:11:   required from 'class Rcpp::ConstInputParameter<Eigen::Map<Eigen::Matrix<int, -1, -1>, 0, Eigen::Stride<0, 0> > >'
+   RcppExports.cpp:106:86:   required from here
+/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: wa     /share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include/Eigen/src/Core/DenseCoeffsBase.h:55:30: warning: ignoring attributes on template argument 'Eigen::internal::packet_traits<int>::type' {aka '__vector(2) long long int'} [-Wignored-attributes]
+     g++ -std=gnu++11 -I"/share/pkg.7/r/3.6.0/install/lib64/R/include" -DNDEBUG  -I"/share/pkg.7/r/3.6.0/install/lib64/R/library/Rcpp/include" -I"/share/pkg.7/r/3.6.0/install/lib64/R/library/RcppEigen/include" -I/usr/local/include  -fpic  -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -c cG_calcGibbsProbY.cpp -o cG_calcGibbsProbY.o
+     g++ -std=gnu++11 -shared -L/share/pkg.7/r/3.6.0/install/lib64/R/lib -L/usr/local/lib64 -o celda.so RcppExports.o cG_calcGibbsProbY.o eigenMatMultInt.o matrixNorm.o matrixSums.o perplexity.o -L/share/pkg.7/r/3.6.0/install/lib64/R/lib -lR
+     installing to /scratch/1916530.1.cbm.q/RtmpXYWZQd/devtools_install_5e694a1f0bf3/00LOCK-celda_irisapo/00new/celda/libs
+     ** checking absolute paths in shared objects and dynamic libraries
+  -  DONE (celda)
+Registered S3 methods overwritten by 'ggplot2':
+  method         from 
+  [.quosures     rlang
+  c.quosures     rlang
+  print.quosures rlang
+
+Attaching package: 'testthat'
+
+The following objects are masked from 'package:devtools':
+
+    setup, test_file
+
+Warning message:
+In (function (dep_name, dep_ver = "*")  :
+  Need scater >= 1.14.4 but loaded version is 1.11.16
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:parallel':
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from 'package:Matrix':
+
+    which
+
+The following objects are masked from 'package:celda':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
+    tapply, union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:Matrix':
+
+    expand
+
+The following objects are masked from 'package:celda':
+
+    first, params, second
+
+The following object is masked from 'package:base':
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: DelayedArray
+Loading required package: matrixStats
+
+Attaching package: 'matrixStats'
+
+The following objects are masked from 'package:Biobase':
+
+    anyMissing, rowMedians
+
+The following object is masked from 'package:celda':
+
+    rowRanges
+
+Loading required package: BiocParallel
+
+Attaching package: 'DelayedArray'
+
+The following objects are masked from 'package:matrixStats':
+
+    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
+
+The following objects are masked from 'package:base':
+
+    aperm, apply, rowsum
+
+Loading required package: SingleCellExperiment
+
+Attaching package: 'MAST'
+
+The following object is masked from 'package:celda':
+
+    filter
+
+The following object is masked from 'package:stats':
+
+    filter
+
+[1] 4529 4340
+--------------------------------------------------
+Starting DecontX. Decontamination
+--------------------------------------------------
+        --------------------------------------------------
+        Estimate contamination
+        --------------------------------------------------
+        --------------------------------------------------
+        Contamination estimation is completed.
+        DecontX time: 15.65762 mins
+        --------------------------------------------------
+--------------------------------------------------
+All is done
+--------------------------------------------------
+--------------------------------------------------
+Starting Celda_CG: Clustering cells and genes.
+--------------------------------------------------
+Sat Dec 28 09:46:15 2019 .. Initializing 'z' in chain 1 with 'split' 
+Sat Dec 28 09:46:15 2019 .. Initializing 'y' in chain 1 with 'split' 
+Sat Dec 28 09:50:02 2019 .... Completed iteration: 1 | logLik: -102441203.791713
+Sat Dec 28 09:50:04 2019 .... Completed iteration: 2 | logLik: -102438611.368745
+Sat Dec 28 09:50:05 2019 .... Completed iteration: 3 | logLik: -102437212.16045
+Sat Dec 28 09:50:06 2019 .... Completed iteration: 4 | logLik: -102435767.458554
+Sat Dec 28 09:50:07 2019 .... Completed iteration: 5 | logLik: -102435084.972898
+Sat Dec 28 09:50:08 2019 .... Completed iteration: 6 | logLik: -102434847.809573
+Sat Dec 28 09:50:10 2019 .... Completed iteration: 7 | logLik: -102434830.958728
+Sat Dec 28 09:50:11 2019 .... Completed iteration: 8 | logLik: -102434631.240399
+Sat Dec 28 09:50:12 2019 .... Completed iteration: 9 | logLik: -102434555.445416
+Sat Dec 28 09:50:13 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:50:37 2019 .... Cluster 61 was reassigned and cluster 31 was split in two.
+Sat Dec 28 09:50:37 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 09:50:40 2019 .... Cluster 3 was reassigned and cluster 12 was split in two.
+Sat Dec 28 09:50:40 2019 .... Completed iteration: 10 | logLik: -102431189.432015
+Sat Dec 28 09:50:41 2019 .... Completed iteration: 11 | logLik: -102427716.829419
+Sat Dec 28 09:50:42 2019 .... Completed iteration: 12 | logLik: -102427074.11546
+Sat Dec 28 09:50:43 2019 .... Completed iteration: 13 | logLik: -102426657.587905
+Sat Dec 28 09:50:45 2019 .... Completed iteration: 14 | logLik: -102426466.215853
+Sat Dec 28 09:50:46 2019 .... Completed iteration: 15 | logLik: -102426439.613555
+Sat Dec 28 09:50:47 2019 .... Completed iteration: 16 | logLik: -102426222.289246
+Sat Dec 28 09:50:48 2019 .... Completed iteration: 17 | logLik: -102426049.763339
+Sat Dec 28 09:50:49 2019 .... Completed iteration: 18 | logLik: -102425972.343179
+Sat Dec 28 09:50:51 2019 .... Completed iteration: 19 | logLik: -102425870.822432
+Sat Dec 28 09:50:52 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:51:16 2019 .... Cluster 137 was reassigned and cluster 115 was split in two.
+Sat Dec 28 09:51:16 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 09:51:18 2019 .... No additional splitting was performed.
+Sat Dec 28 09:51:18 2019 .... Completed iteration: 20 | logLik: -102425553.828597
+Sat Dec 28 09:51:20 2019 .... Completed iteration: 21 | logLik: -102425379.380495
+Sat Dec 28 09:51:21 2019 .... Completed iteration: 22 | logLik: -102425368.744518
+Sat Dec 28 09:51:22 2019 .... Completed iteration: 23 | logLik: -102425302.398991
+Sat Dec 28 09:51:23 2019 .... Completed iteration: 24 | logLik: -102425336.974498
+Sat Dec 28 09:51:24 2019 .... Completed iteration: 25 | logLik: -102425251.893762
+Sat Dec 28 09:51:26 2019 .... Completed iteration: 26 | logLik: -102425343.713446
+Sat Dec 28 09:51:27 2019 .... Completed iteration: 27 | logLik: -102425332.065153
+Sat Dec 28 09:51:28 2019 .... Completed iteration: 28 | logLik: -102425294.680443
+Sat Dec 28 09:51:29 2019 .... Completed iteration: 29 | logLik: -102425405.495603
+Sat Dec 28 09:51:30 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:51:55 2019 .... Cluster 58 was reassigned and cluster 15 was split in two.
+Sat Dec 28 09:51:55 2019 .... Completed iteration: 30 | logLik: -102425008.331477
+Sat Dec 28 09:51:56 2019 .... Completed iteration: 31 | logLik: -102424710.978878
+Sat Dec 28 09:51:57 2019 .... Completed iteration: 32 | logLik: -102424644.430125
+Sat Dec 28 09:51:59 2019 .... Completed iteration: 33 | logLik: -102424672.809263
+Sat Dec 28 09:52:00 2019 .... Completed iteration: 34 | logLik: -102424664.857412
+Sat Dec 28 09:52:01 2019 .... Completed iteration: 35 | logLik: -102424666.572572
+Sat Dec 28 09:52:02 2019 .... Completed iteration: 36 | logLik: -102424638.573726
+Sat Dec 28 09:52:03 2019 .... Completed iteration: 37 | logLik: -102424574.746316
+Sat Dec 28 09:52:05 2019 .... Completed iteration: 38 | logLik: -102424640.732008
+Sat Dec 28 09:52:06 2019 .... Completed iteration: 39 | logLik: -102424616.211509
+Sat Dec 28 09:52:07 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:52:31 2019 .... Cluster 94 was reassigned and cluster 11 was split in two.
+Sat Dec 28 09:52:31 2019 .... Completed iteration: 40 | logLik: -102424437.737658
+Sat Dec 28 09:52:33 2019 .... Completed iteration: 41 | logLik: -102424258.524726
+Sat Dec 28 09:52:34 2019 .... Completed iteration: 42 | logLik: -102424217.968207
+Sat Dec 28 09:52:35 2019 .... Completed iteration: 43 | logLik: -102424211.102672
+Sat Dec 28 09:52:36 2019 .... Completed iteration: 44 | logLik: -102424159.713157
+Sat Dec 28 09:52:38 2019 .... Completed iteration: 45 | logLik: -102424075.427228
+Sat Dec 28 09:52:39 2019 .... Completed iteration: 46 | logLik: -102424153.176972
+Sat Dec 28 09:52:40 2019 .... Completed iteration: 47 | logLik: -102424159.380796
+Sat Dec 28 09:52:41 2019 .... Completed iteration: 48 | logLik: -102424006.055217
+Sat Dec 28 09:52:43 2019 .... Completed iteration: 49 | logLik: -102424021.366866
+Sat Dec 28 09:52:44 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:53:08 2019 .... Cluster 98 was reassigned and cluster 23 was split in two.
+Sat Dec 28 09:53:08 2019 .... Completed iteration: 50 | logLik: -102423822.916363
+Sat Dec 28 09:53:09 2019 .... Completed iteration: 51 | logLik: -102423820.958026
+Sat Dec 28 09:53:10 2019 .... Completed iteration: 52 | logLik: -102423745.127961
+Sat Dec 28 09:53:11 2019 .... Completed iteration: 53 | logLik: -102423722.527553
+Sat Dec 28 09:53:13 2019 .... Completed iteration: 54 | logLik: -102423768.967918
+Sat Dec 28 09:53:14 2019 .... Completed iteration: 55 | logLik: -102423802.516395
+Sat Dec 28 09:53:15 2019 .... Completed iteration: 56 | logLik: -102423895.612959
+Sat Dec 28 09:53:16 2019 .... Completed iteration: 57 | logLik: -102423798.744182
+Sat Dec 28 09:53:17 2019 .... Completed iteration: 58 | logLik: -102423767.162858
+Sat Dec 28 09:53:19 2019 .... Completed iteration: 59 | logLik: -102423777.743601
+Sat Dec 28 09:53:20 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:53:44 2019 .... Cluster 105 was reassigned and cluster 8 was split in two.
+Sat Dec 28 09:53:44 2019 .... Completed iteration: 60 | logLik: -102423593.715813
+Sat Dec 28 09:53:45 2019 .... Completed iteration: 61 | logLik: -102423551.49271
+Sat Dec 28 09:53:47 2019 .... Completed iteration: 62 | logLik: -102423480.673851
+Sat Dec 28 09:53:48 2019 .... Completed iteration: 63 | logLik: -102423488.025759
+Sat Dec 28 09:53:49 2019 .... Completed iteration: 64 | logLik: -102423461.425506
+Sat Dec 28 09:53:50 2019 .... Completed iteration: 65 | logLik: -102423528.947768
+Sat Dec 28 09:53:52 2019 .... Completed iteration: 66 | logLik: -102423479.054127
+Sat Dec 28 09:53:53 2019 .... Completed iteration: 67 | logLik: -102423533.144612
+Sat Dec 28 09:53:54 2019 .... Completed iteration: 68 | logLik: -102423543.24734
+Sat Dec 28 09:53:56 2019 .... Completed iteration: 69 | logLik: -102423492.13876
+Sat Dec 28 09:53:57 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:54:22 2019 .... Cluster 106 was reassigned and cluster 103 was split in two.
+Sat Dec 28 09:54:22 2019 .... Completed iteration: 70 | logLik: -102423397.542841
+Sat Dec 28 09:54:23 2019 .... Completed iteration: 71 | logLik: -102423348.646852
+Sat Dec 28 09:54:25 2019 .... Completed iteration: 72 | logLik: -102423323.014404
+Sat Dec 28 09:54:26 2019 .... Completed iteration: 73 | logLik: -102423342.249019
+Sat Dec 28 09:54:27 2019 .... Completed iteration: 74 | logLik: -102423335.46592
+Sat Dec 28 09:54:28 2019 .... Completed iteration: 75 | logLik: -102423327.541313
+Sat Dec 28 09:54:30 2019 .... Completed iteration: 76 | logLik: -102423327.618149
+Sat Dec 28 09:54:31 2019 .... Completed iteration: 77 | logLik: -102423346.296408
+Sat Dec 28 09:54:32 2019 .... Completed iteration: 78 | logLik: -102423328.974431
+Sat Dec 28 09:54:33 2019 .... Completed iteration: 79 | logLik: -102423353.035855
+Sat Dec 28 09:54:35 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:55:00 2019 .... Cluster 134 was reassigned and cluster 74 was split in two.
+Sat Dec 28 09:55:00 2019 .... Completed iteration: 80 | logLik: -102423231.988301
+Sat Dec 28 09:55:01 2019 .... Completed iteration: 81 | logLik: -102423155.388817
+Sat Dec 28 09:55:03 2019 .... Completed iteration: 82 | logLik: -102423184.519111
+Sat Dec 28 09:55:04 2019 .... Completed iteration: 83 | logLik: -102423109.845494
+Sat Dec 28 09:55:05 2019 .... Completed iteration: 84 | logLik: -102423153.32687
+Sat Dec 28 09:55:06 2019 .... Completed iteration: 85 | logLik: -102423137.560859
+Sat Dec 28 09:55:08 2019 .... Completed iteration: 86 | logLik: -102423162.700444
+Sat Dec 28 09:55:09 2019 .... Completed iteration: 87 | logLik: -102423136.327906
+Sat Dec 28 09:55:10 2019 .... Completed iteration: 88 | logLik: -102423168.049648
+Sat Dec 28 09:55:11 2019 .... Completed iteration: 89 | logLik: -102423155.67082
+Sat Dec 28 09:55:13 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:55:38 2019 .... Cluster 41 was reassigned and cluster 113 was split in two.
+Sat Dec 28 09:55:38 2019 .... Completed iteration: 90 | logLik: -102422993.822567
+Sat Dec 28 09:55:39 2019 .... Completed iteration: 91 | logLik: -102422822.054322
+Sat Dec 28 09:55:40 2019 .... Completed iteration: 92 | logLik: -102422765.535112
+Sat Dec 28 09:55:41 2019 .... Completed iteration: 93 | logLik: -102422809.199645
+Sat Dec 28 09:55:43 2019 .... Completed iteration: 94 | logLik: -102422798.444691
+Sat Dec 28 09:55:44 2019 .... Completed iteration: 95 | logLik: -102422836.644384
+Sat Dec 28 09:55:45 2019 .... Completed iteration: 96 | logLik: -102422887.410358
+Sat Dec 28 09:55:47 2019 .... Completed iteration: 97 | logLik: -102422813.087706
+Sat Dec 28 09:55:48 2019 .... Completed iteration: 98 | logLik: -102422788.796366
+Sat Dec 28 09:55:49 2019 .... Completed iteration: 99 | logLik: -102422815.553067
+Sat Dec 28 09:55:50 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:56:15 2019 .... Cluster 48 was reassigned and cluster 137 was split in two.
+Sat Dec 28 09:56:15 2019 .... Completed iteration: 100 | logLik: -102422698.180036
+Sat Dec 28 09:56:16 2019 .... Completed iteration: 101 | logLik: -102422497.127034
+Sat Dec 28 09:56:18 2019 .... Completed iteration: 102 | logLik: -102422396.860309
+Sat Dec 28 09:56:19 2019 .... Completed iteration: 103 | logLik: -102422413.329749
+Sat Dec 28 09:56:20 2019 .... Completed iteration: 104 | logLik: -102422376.7213
+Sat Dec 28 09:56:22 2019 .... Completed iteration: 105 | logLik: -102422321.341925
+Sat Dec 28 09:56:23 2019 .... Completed iteration: 106 | logLik: -102422334.80981
+Sat Dec 28 09:56:24 2019 .... Completed iteration: 107 | logLik: -102422319.289637
+Sat Dec 28 09:56:25 2019 .... Completed iteration: 108 | logLik: -102422440.620432
+Sat Dec 28 09:56:27 2019 .... Completed iteration: 109 | logLik: -102422379.621041
+Sat Dec 28 09:56:28 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:56:53 2019 .... Cluster 43 was reassigned and cluster 64 was split in two.
+Sat Dec 28 09:56:53 2019 .... Completed iteration: 110 | logLik: -102422297.251815
+Sat Dec 28 09:56:54 2019 .... Completed iteration: 111 | logLik: -102422196.384012
+Sat Dec 28 09:56:56 2019 .... Completed iteration: 112 | logLik: -102422266.78506
+Sat Dec 28 09:56:57 2019 .... Completed iteration: 113 | logLik: -102422228.820592
+Sat Dec 28 09:56:58 2019 .... Completed iteration: 114 | logLik: -102422243.173993
+Sat Dec 28 09:57:00 2019 .... Completed iteration: 115 | logLik: -102422206.170407
+Sat Dec 28 09:57:01 2019 .... Completed iteration: 116 | logLik: -102422208.972778
+Sat Dec 28 09:57:02 2019 .... Completed iteration: 117 | logLik: -102422154.728658
+Sat Dec 28 09:57:03 2019 .... Completed iteration: 118 | logLik: -102422190.214714
+Sat Dec 28 09:57:05 2019 .... Completed iteration: 119 | logLik: -102422208.995818
+Sat Dec 28 09:57:06 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:57:31 2019 .... No additional splitting was performed.
+Sat Dec 28 09:57:31 2019 .... Completed iteration: 120 | logLik: -102422182.183365
+Sat Dec 28 09:57:32 2019 .... Completed iteration: 121 | logLik: -102422199.874835
+Sat Dec 28 09:57:33 2019 .... Completed iteration: 122 | logLik: -102422193.296039
+Sat Dec 28 09:57:34 2019 .... Completed iteration: 123 | logLik: -102422249.9954
+Sat Dec 28 09:57:36 2019 .... Completed iteration: 124 | logLik: -102422180.347706
+Sat Dec 28 09:57:37 2019 .... Completed iteration: 125 | logLik: -102422233.569368
+Sat Dec 28 09:57:38 2019 .... Completed iteration: 126 | logLik: -102422225.367683
+Sat Dec 28 09:57:39 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 09:58:04 2019 .... No additional splitting was performed.
+Sat Dec 28 09:58:04 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 09:58:07 2019 .... No additional splitting was performed.
+Sat Dec 28 09:58:07 2019 .... Completed iteration: 127 | logLik: -102422188.394903
+Sat Dec 28 09:58:07 2019 .. Finished chain 1
+Sat Dec 28 09:58:07 2019 .. Initializing 'z' in chain 2 with 'split' 
+Sat Dec 28 09:58:07 2019 .. Initializing 'y' in chain 2 with 'split' 
+Sat Dec 28 10:01:55 2019 .... Completed iteration: 1 | logLik: -102445312.069902
+Sat Dec 28 10:01:56 2019 .... Completed iteration: 2 | logLik: -102442009.950465
+Sat Dec 28 10:01:57 2019 .... Completed iteration: 3 | logLik: -102441362.105996
+Sat Dec 28 10:01:58 2019 .... Completed iteration: 4 | logLik: -102440776.788734
+Sat Dec 28 10:01:59 2019 .... Completed iteration: 5 | logLik: -102440386.215317
+Sat Dec 28 10:02:01 2019 .... Completed iteration: 6 | logLik: -102440204.54166
+Sat Dec 28 10:02:02 2019 .... Completed iteration: 7 | logLik: -102440191.171023
+Sat Dec 28 10:02:03 2019 .... Completed iteration: 8 | logLik: -102440168.446631
+Sat Dec 28 10:02:04 2019 .... Completed iteration: 9 | logLik: -102439990.249086
+Sat Dec 28 10:02:05 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:02:29 2019 .... Cluster 37 was reassigned and cluster 126 was split in two.
+Sat Dec 28 10:02:29 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:02:32 2019 .... Cluster 15 was reassigned and cluster 19 was split in two.
+Sat Dec 28 10:02:32 2019 .... Completed iteration: 10 | logLik: -102427997.266504
+Sat Dec 28 10:02:33 2019 .... Completed iteration: 11 | logLik: -102426851.053772
+Sat Dec 28 10:02:34 2019 .... Completed iteration: 12 | logLik: -102426761.86616
+Sat Dec 28 10:02:35 2019 .... Completed iteration: 13 | logLik: -102426616.695679
+Sat Dec 28 10:02:37 2019 .... Completed iteration: 14 | logLik: -102426564.049495
+Sat Dec 28 10:02:38 2019 .... Completed iteration: 15 | logLik: -102426427.325406
+Sat Dec 28 10:02:39 2019 .... Completed iteration: 16 | logLik: -102426438.760087
+Sat Dec 28 10:02:40 2019 .... Completed iteration: 17 | logLik: -102426375.154339
+Sat Dec 28 10:02:41 2019 .... Completed iteration: 18 | logLik: -102426219.596692
+Sat Dec 28 10:02:43 2019 .... Completed iteration: 19 | logLik: -102426043.890881
+Sat Dec 28 10:02:44 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:03:08 2019 .... Cluster 87 was reassigned and cluster 30 was split in two.
+Sat Dec 28 10:03:08 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:03:11 2019 .... No additional splitting was performed.
+Sat Dec 28 10:03:11 2019 .... Completed iteration: 20 | logLik: -102425577.462143
+Sat Dec 28 10:03:12 2019 .... Completed iteration: 21 | logLik: -102425331.064862
+Sat Dec 28 10:03:13 2019 .... Completed iteration: 22 | logLik: -102425317.416342
+Sat Dec 28 10:03:14 2019 .... Completed iteration: 23 | logLik: -102425189.182024
+Sat Dec 28 10:03:16 2019 .... Completed iteration: 24 | logLik: -102425194.825976
+Sat Dec 28 10:03:17 2019 .... Completed iteration: 25 | logLik: -102425243.502008
+Sat Dec 28 10:03:18 2019 .... Completed iteration: 26 | logLik: -102425150.915737
+Sat Dec 28 10:03:19 2019 .... Completed iteration: 27 | logLik: -102425162.35365
+Sat Dec 28 10:03:20 2019 .... Completed iteration: 28 | logLik: -102425168.173234
+Sat Dec 28 10:03:22 2019 .... Completed iteration: 29 | logLik: -102425225.054843
+Sat Dec 28 10:03:23 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:03:48 2019 .... Cluster 141 was reassigned and cluster 104 was split in two.
+Sat Dec 28 10:03:48 2019 .... Completed iteration: 30 | logLik: -102424921.468128
+Sat Dec 28 10:03:49 2019 .... Completed iteration: 31 | logLik: -102424911.724253
+Sat Dec 28 10:03:50 2019 .... Completed iteration: 32 | logLik: -102424933.206734
+Sat Dec 28 10:03:52 2019 .... Completed iteration: 33 | logLik: -102424920.306956
+Sat Dec 28 10:03:53 2019 .... Completed iteration: 34 | logLik: -102424888.963061
+Sat Dec 28 10:03:54 2019 .... Completed iteration: 35 | logLik: -102424862.551551
+Sat Dec 28 10:03:56 2019 .... Completed iteration: 36 | logLik: -102424858.783342
+Sat Dec 28 10:03:57 2019 .... Completed iteration: 37 | logLik: -102424833.450856
+Sat Dec 28 10:03:58 2019 .... Completed iteration: 38 | logLik: -102424792.511432
+Sat Dec 28 10:04:00 2019 .... Completed iteration: 39 | logLik: -102424824.866666
+Sat Dec 28 10:04:01 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:04:26 2019 .... Cluster 114 was reassigned and cluster 14 was split in two.
+Sat Dec 28 10:04:26 2019 .... Completed iteration: 40 | logLik: -102424568.150575
+Sat Dec 28 10:04:27 2019 .... Completed iteration: 41 | logLik: -102424591.072235
+Sat Dec 28 10:04:28 2019 .... Completed iteration: 42 | logLik: -102424520.517614
+Sat Dec 28 10:04:30 2019 .... Completed iteration: 43 | logLik: -102424514.869495
+Sat Dec 28 10:04:31 2019 .... Completed iteration: 44 | logLik: -102424487.944186
+Sat Dec 28 10:04:32 2019 .... Completed iteration: 45 | logLik: -102424537.940471
+Sat Dec 28 10:04:33 2019 .... Completed iteration: 46 | logLik: -102424483.763867
+Sat Dec 28 10:04:35 2019 .... Completed iteration: 47 | logLik: -102424460.576975
+Sat Dec 28 10:04:36 2019 .... Completed iteration: 48 | logLik: -102424396.268858
+Sat Dec 28 10:04:37 2019 .... Completed iteration: 49 | logLik: -102424367.560576
+Sat Dec 28 10:04:38 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:05:03 2019 .... Cluster 148 was reassigned and cluster 74 was split in two.
+Sat Dec 28 10:05:03 2019 .... Completed iteration: 50 | logLik: -102424192.338709
+Sat Dec 28 10:05:04 2019 .... Completed iteration: 51 | logLik: -102424248.784473
+Sat Dec 28 10:05:05 2019 .... Completed iteration: 52 | logLik: -102424189.8277
+Sat Dec 28 10:05:06 2019 .... Completed iteration: 53 | logLik: -102424186.630186
+Sat Dec 28 10:05:08 2019 .... Completed iteration: 54 | logLik: -102424204.739121
+Sat Dec 28 10:05:09 2019 .... Completed iteration: 55 | logLik: -102424235.635802
+Sat Dec 28 10:05:10 2019 .... Completed iteration: 56 | logLik: -102424190.591382
+Sat Dec 28 10:05:11 2019 .... Completed iteration: 57 | logLik: -102424185.994077
+Sat Dec 28 10:05:13 2019 .... Completed iteration: 58 | logLik: -102424181.890424
+Sat Dec 28 10:05:14 2019 .... Completed iteration: 59 | logLik: -102424156.308504
+Sat Dec 28 10:05:15 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:05:40 2019 .... Cluster 43 was reassigned and cluster 119 was split in two.
+Sat Dec 28 10:05:40 2019 .... Completed iteration: 60 | logLik: -102424086.59696
+Sat Dec 28 10:05:41 2019 .... Completed iteration: 61 | logLik: -102423975.171491
+Sat Dec 28 10:05:42 2019 .... Completed iteration: 62 | logLik: -102423900.879375
+Sat Dec 28 10:05:43 2019 .... Completed iteration: 63 | logLik: -102423878.352148
+Sat Dec 28 10:05:45 2019 .... Completed iteration: 64 | logLik: -102423778.861257
+Sat Dec 28 10:05:46 2019 .... Completed iteration: 65 | logLik: -102423671.607981
+Sat Dec 28 10:05:47 2019 .... Completed iteration: 66 | logLik: -102423601.062887
+Sat Dec 28 10:05:48 2019 .... Completed iteration: 67 | logLik: -102423560.687489
+Sat Dec 28 10:05:50 2019 .... Completed iteration: 68 | logLik: -102423532.056743
+Sat Dec 28 10:05:51 2019 .... Completed iteration: 69 | logLik: -102423528.767844
+Sat Dec 28 10:05:52 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:06:17 2019 .... Cluster 137 was reassigned and cluster 34 was split in two.
+Sat Dec 28 10:06:17 2019 .... Completed iteration: 70 | logLik: -102423400.242952
+Sat Dec 28 10:06:18 2019 .... Completed iteration: 71 | logLik: -102423239.589792
+Sat Dec 28 10:06:20 2019 .... Completed iteration: 72 | logLik: -102423235.081365
+Sat Dec 28 10:06:21 2019 .... Completed iteration: 73 | logLik: -102423191.815288
+Sat Dec 28 10:06:22 2019 .... Completed iteration: 74 | logLik: -102423181.181367
+Sat Dec 28 10:06:23 2019 .... Completed iteration: 75 | logLik: -102423168.002195
+Sat Dec 28 10:06:25 2019 .... Completed iteration: 76 | logLik: -102423164.92295
+Sat Dec 28 10:06:26 2019 .... Completed iteration: 77 | logLik: -102423140.094198
+Sat Dec 28 10:06:27 2019 .... Completed iteration: 78 | logLik: -102423178.227068
+Sat Dec 28 10:06:28 2019 .... Completed iteration: 79 | logLik: -102423154.454519
+Sat Dec 28 10:06:29 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:06:54 2019 .... Cluster 66 was reassigned and cluster 75 was split in two.
+Sat Dec 28 10:06:54 2019 .... Completed iteration: 80 | logLik: -102423054.884304
+Sat Dec 28 10:06:55 2019 .... Completed iteration: 81 | logLik: -102422948.808069
+Sat Dec 28 10:06:57 2019 .... Completed iteration: 82 | logLik: -102422945.791645
+Sat Dec 28 10:06:58 2019 .... Completed iteration: 83 | logLik: -102422842.631684
+Sat Dec 28 10:06:59 2019 .... Completed iteration: 84 | logLik: -102422832.52924
+Sat Dec 28 10:07:00 2019 .... Completed iteration: 85 | logLik: -102422844.994017
+Sat Dec 28 10:07:02 2019 .... Completed iteration: 86 | logLik: -102422842.143543
+Sat Dec 28 10:07:03 2019 .... Completed iteration: 87 | logLik: -102422841.215798
+Sat Dec 28 10:07:04 2019 .... Completed iteration: 88 | logLik: -102422889.435151
+Sat Dec 28 10:07:05 2019 .... Completed iteration: 89 | logLik: -102422904.751014
+Sat Dec 28 10:07:06 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:07:31 2019 .... Cluster 76 was reassigned and cluster 61 was split in two.
+Sat Dec 28 10:07:31 2019 .... Completed iteration: 90 | logLik: -102422665.226008
+Sat Dec 28 10:07:32 2019 .... Completed iteration: 91 | logLik: -102422674.086346
+Sat Dec 28 10:07:33 2019 .... Completed iteration: 92 | logLik: -102422631.491971
+Sat Dec 28 10:07:35 2019 .... Completed iteration: 93 | logLik: -102422644.377532
+Sat Dec 28 10:07:36 2019 .... Completed iteration: 94 | logLik: -102422626.290649
+Sat Dec 28 10:07:37 2019 .... Completed iteration: 95 | logLik: -102422616.170925
+Sat Dec 28 10:07:38 2019 .... Completed iteration: 96 | logLik: -102422622.499724
+Sat Dec 28 10:07:39 2019 .... Completed iteration: 97 | logLik: -102422600.016453
+Sat Dec 28 10:07:41 2019 .... Completed iteration: 98 | logLik: -102422627.246428
+Sat Dec 28 10:07:42 2019 .... Completed iteration: 99 | logLik: -102422631.554248
+Sat Dec 28 10:07:43 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:08:07 2019 .... Cluster 62 was reassigned and cluster 100 was split in two.
+Sat Dec 28 10:08:07 2019 .... Completed iteration: 100 | logLik: -102422556.099412
+Sat Dec 28 10:08:08 2019 .... Completed iteration: 101 | logLik: -102422442.692717
+Sat Dec 28 10:08:09 2019 .... Completed iteration: 102 | logLik: -102422409.903742
+Sat Dec 28 10:08:11 2019 .... Completed iteration: 103 | logLik: -102422333.75674
+Sat Dec 28 10:08:12 2019 .... Completed iteration: 104 | logLik: -102422392.668961
+Sat Dec 28 10:08:13 2019 .... Completed iteration: 105 | logLik: -102422441.328415
+Sat Dec 28 10:08:14 2019 .... Completed iteration: 106 | logLik: -102422394.193023
+Sat Dec 28 10:08:16 2019 .... Completed iteration: 107 | logLik: -102422415.072782
+Sat Dec 28 10:08:17 2019 .... Completed iteration: 108 | logLik: -102422379.848012
+Sat Dec 28 10:08:18 2019 .... Completed iteration: 109 | logLik: -102422399.870822
+Sat Dec 28 10:08:19 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:08:44 2019 .... Cluster 47 was reassigned and cluster 91 was split in two.
+Sat Dec 28 10:08:44 2019 .... Completed iteration: 110 | logLik: -102422371.442743
+Sat Dec 28 10:08:45 2019 .... Completed iteration: 111 | logLik: -102422171.517139
+Sat Dec 28 10:08:46 2019 .... Completed iteration: 112 | logLik: -102422220.313974
+Sat Dec 28 10:08:47 2019 .... Completed iteration: 113 | logLik: -102422188.585291
+Sat Dec 28 10:08:48 2019 .... Completed iteration: 114 | logLik: -102422260.09419
+Sat Dec 28 10:08:50 2019 .... Completed iteration: 115 | logLik: -102422161.577584
+Sat Dec 28 10:08:51 2019 .... Completed iteration: 116 | logLik: -102422160.156799
+Sat Dec 28 10:08:52 2019 .... Completed iteration: 117 | logLik: -102422151.402994
+Sat Dec 28 10:08:53 2019 .... Completed iteration: 118 | logLik: -102422147.416079
+Sat Dec 28 10:08:54 2019 .... Completed iteration: 119 | logLik: -102422175.912923
+Sat Dec 28 10:08:56 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:09:20 2019 .... Cluster 147 was reassigned and cluster 68 was split in two.
+Sat Dec 28 10:09:20 2019 .... Completed iteration: 120 | logLik: -102422138.820584
+Sat Dec 28 10:09:21 2019 .... Completed iteration: 121 | logLik: -102422016.058575
+Sat Dec 28 10:09:22 2019 .... Completed iteration: 122 | logLik: -102422017.368955
+Sat Dec 28 10:09:24 2019 .... Completed iteration: 123 | logLik: -102421967.993932
+Sat Dec 28 10:09:25 2019 .... Completed iteration: 124 | logLik: -102422065.099896
+Sat Dec 28 10:09:26 2019 .... Completed iteration: 125 | logLik: -102422024.517647
+Sat Dec 28 10:09:27 2019 .... Completed iteration: 126 | logLik: -102422054.413577
+Sat Dec 28 10:09:28 2019 .... Completed iteration: 127 | logLik: -102422002.912861
+Sat Dec 28 10:09:30 2019 .... Completed iteration: 128 | logLik: -102421962.641086
+Sat Dec 28 10:09:31 2019 .... Completed iteration: 129 | logLik: -102421985.991103
+Sat Dec 28 10:09:32 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:09:56 2019 .... Cluster 138 was reassigned and cluster 73 was split in two.
+Sat Dec 28 10:09:56 2019 .... Completed iteration: 130 | logLik: -102421917.315411
+Sat Dec 28 10:09:57 2019 .... Completed iteration: 131 | logLik: -102421870.620317
+Sat Dec 28 10:09:59 2019 .... Completed iteration: 132 | logLik: -102421912.873855
+Sat Dec 28 10:10:00 2019 .... Completed iteration: 133 | logLik: -102421895.703934
+Sat Dec 28 10:10:01 2019 .... Completed iteration: 134 | logLik: -102421850.485334
+Sat Dec 28 10:10:02 2019 .... Completed iteration: 135 | logLik: -102421772.549518
+Sat Dec 28 10:10:03 2019 .... Completed iteration: 136 | logLik: -102421771.777883
+Sat Dec 28 10:10:05 2019 .... Completed iteration: 137 | logLik: -102421810.065819
+Sat Dec 28 10:10:06 2019 .... Completed iteration: 138 | logLik: -102421760.516741
+Sat Dec 28 10:10:07 2019 .... Completed iteration: 139 | logLik: -102421736.406302
+Sat Dec 28 10:10:08 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:10:32 2019 .... No additional splitting was performed.
+Sat Dec 28 10:10:32 2019 .... Completed iteration: 140 | logLik: -102421791.419279
+Sat Dec 28 10:10:34 2019 .... Completed iteration: 141 | logLik: -102421740.127957
+Sat Dec 28 10:10:35 2019 .... Completed iteration: 142 | logLik: -102421774.179672
+Sat Dec 28 10:10:36 2019 .... Completed iteration: 143 | logLik: -102421733.226533
+Sat Dec 28 10:10:37 2019 .... Completed iteration: 144 | logLik: -102421746.043553
+Sat Dec 28 10:10:38 2019 .... Completed iteration: 145 | logLik: -102421755.053405
+Sat Dec 28 10:10:40 2019 .... Completed iteration: 146 | logLik: -102421724.521289
+Sat Dec 28 10:10:41 2019 .... Completed iteration: 147 | logLik: -102421675.800634
+Sat Dec 28 10:10:42 2019 .... Completed iteration: 148 | logLik: -102421634.414122
+Sat Dec 28 10:10:43 2019 .... Completed iteration: 149 | logLik: -102421718.88508
+Sat Dec 28 10:10:44 2019 .... Completed iteration: 150 | logLik: -102421667.051138
+Sat Dec 28 10:10:46 2019 .... Completed iteration: 151 | logLik: -102421641.615167
+Sat Dec 28 10:10:47 2019 .... Completed iteration: 152 | logLik: -102421669.772282
+Sat Dec 28 10:10:48 2019 .... Completed iteration: 153 | logLik: -102421687.702249
+Sat Dec 28 10:10:49 2019 .... Completed iteration: 154 | logLik: -102421642.695852
+Sat Dec 28 10:10:50 2019 .... Completed iteration: 155 | logLik: -102421676.82778
+Sat Dec 28 10:10:52 2019 .... Completed iteration: 156 | logLik: -102421703.191801
+Sat Dec 28 10:10:53 2019 .... Completed iteration: 157 | logLik: -102421718.334513
+Sat Dec 28 10:10:54 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:11:19 2019 .... No additional splitting was performed.
+Sat Dec 28 10:11:19 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:11:21 2019 .... No additional splitting was performed.
+Sat Dec 28 10:11:21 2019 .... Completed iteration: 158 | logLik: -102421694.216934
+Sat Dec 28 10:11:21 2019 .. Finished chain 2
+Sat Dec 28 10:11:21 2019 .. Initializing 'z' in chain 3 with 'split' 
+Sat Dec 28 10:11:21 2019 .. Initializing 'y' in chain 3 with 'split' 
+Sat Dec 28 10:15:06 2019 .... Completed iteration: 1 | logLik: -102441540.617134
+Sat Dec 28 10:15:07 2019 .... Completed iteration: 2 | logLik: -102439221.080504
+Sat Dec 28 10:15:08 2019 .... Completed iteration: 3 | logLik: -102438664.420629
+Sat Dec 28 10:15:10 2019 .... Completed iteration: 4 | logLik: -102438301.668247
+Sat Dec 28 10:15:11 2019 .... Completed iteration: 5 | logLik: -102438182.357164
+Sat Dec 28 10:15:12 2019 .... Completed iteration: 6 | logLik: -102437981.508561
+Sat Dec 28 10:15:13 2019 .... Completed iteration: 7 | logLik: -102437823.162822
+Sat Dec 28 10:15:15 2019 .... Completed iteration: 8 | logLik: -102437742.79713
+Sat Dec 28 10:15:16 2019 .... Completed iteration: 9 | logLik: -102437608.059782
+Sat Dec 28 10:15:17 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:15:41 2019 .... Cluster 35 was reassigned and cluster 116 was split in two.
+Sat Dec 28 10:15:41 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:15:43 2019 .... Cluster 8 was reassigned and cluster 10 was split in two.
+Sat Dec 28 10:15:43 2019 .... Completed iteration: 10 | logLik: -102433095.526811
+Sat Dec 28 10:15:45 2019 .... Completed iteration: 11 | logLik: -102430033.751025
+Sat Dec 28 10:15:46 2019 .... Completed iteration: 12 | logLik: -102429591.735688
+Sat Dec 28 10:15:47 2019 .... Completed iteration: 13 | logLik: -102429500.539221
+Sat Dec 28 10:15:48 2019 .... Completed iteration: 14 | logLik: -102429532.829519
+Sat Dec 28 10:15:50 2019 .... Completed iteration: 15 | logLik: -102429444.124023
+Sat Dec 28 10:15:51 2019 .... Completed iteration: 16 | logLik: -102429424.257183
+Sat Dec 28 10:15:52 2019 .... Completed iteration: 17 | logLik: -102429397.517088
+Sat Dec 28 10:15:53 2019 .... Completed iteration: 18 | logLik: -102429350.290466
+Sat Dec 28 10:15:54 2019 .... Completed iteration: 19 | logLik: -102429316.235791
+Sat Dec 28 10:15:56 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:16:20 2019 .... Cluster 65 was reassigned and cluster 92 was split in two.
+Sat Dec 28 10:16:20 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:16:22 2019 .... No additional splitting was performed.
+Sat Dec 28 10:16:22 2019 .... Completed iteration: 20 | logLik: -102428816.158072
+Sat Dec 28 10:16:23 2019 .... Completed iteration: 21 | logLik: -102428707.294914
+Sat Dec 28 10:16:25 2019 .... Completed iteration: 22 | logLik: -102428746.705175
+Sat Dec 28 10:16:26 2019 .... Completed iteration: 23 | logLik: -102428755.663445
+Sat Dec 28 10:16:27 2019 .... Completed iteration: 24 | logLik: -102428764.175926
+Sat Dec 28 10:16:28 2019 .... Completed iteration: 25 | logLik: -102428688.43162
+Sat Dec 28 10:16:29 2019 .... Completed iteration: 26 | logLik: -102428679.661858
+Sat Dec 28 10:16:31 2019 .... Completed iteration: 27 | logLik: -102428545.052957
+Sat Dec 28 10:16:32 2019 .... Completed iteration: 28 | logLik: -102428112.840278
+Sat Dec 28 10:16:33 2019 .... Completed iteration: 29 | logLik: -102427799.334506
+Sat Dec 28 10:16:34 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:16:58 2019 .... Cluster 147 was reassigned and cluster 129 was split in two.
+Sat Dec 28 10:16:58 2019 .... Completed iteration: 30 | logLik: -102427235.534108
+Sat Dec 28 10:16:59 2019 .... Completed iteration: 31 | logLik: -102427037.402459
+Sat Dec 28 10:17:00 2019 .... Completed iteration: 32 | logLik: -102426977.168165
+Sat Dec 28 10:17:02 2019 .... Completed iteration: 33 | logLik: -102426905.304442
+Sat Dec 28 10:17:03 2019 .... Completed iteration: 34 | logLik: -102426718.392394
+Sat Dec 28 10:17:04 2019 .... Completed iteration: 35 | logLik: -102426461.319494
+Sat Dec 28 10:17:05 2019 .... Completed iteration: 36 | logLik: -102426478.22738
+Sat Dec 28 10:17:06 2019 .... Completed iteration: 37 | logLik: -102426397.475086
+Sat Dec 28 10:17:08 2019 .... Completed iteration: 38 | logLik: -102426424.107727
+Sat Dec 28 10:17:09 2019 .... Completed iteration: 39 | logLik: -102426454.007629
+Sat Dec 28 10:17:10 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:17:34 2019 .... Cluster 70 was reassigned and cluster 87 was split in two.
+Sat Dec 28 10:17:34 2019 .... Completed iteration: 40 | logLik: -102426024.432249
+Sat Dec 28 10:17:35 2019 .... Completed iteration: 41 | logLik: -102425752.160813
+Sat Dec 28 10:17:36 2019 .... Completed iteration: 42 | logLik: -102425808.728675
+Sat Dec 28 10:17:37 2019 .... Completed iteration: 43 | logLik: -102425803.418684
+Sat Dec 28 10:17:39 2019 .... Completed iteration: 44 | logLik: -102425750.137046
+Sat Dec 28 10:17:40 2019 .... Completed iteration: 45 | logLik: -102425835.212118
+Sat Dec 28 10:17:41 2019 .... Completed iteration: 46 | logLik: -102425780.950349
+Sat Dec 28 10:17:42 2019 .... Completed iteration: 47 | logLik: -102425871.444221
+Sat Dec 28 10:17:43 2019 .... Completed iteration: 48 | logLik: -102425813.752387
+Sat Dec 28 10:17:45 2019 .... Completed iteration: 49 | logLik: -102425777.661889
+Sat Dec 28 10:17:46 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:18:10 2019 .... Cluster 49 was reassigned and cluster 115 was split in two.
+Sat Dec 28 10:18:10 2019 .... Completed iteration: 50 | logLik: -102425374.429146
+Sat Dec 28 10:18:11 2019 .... Completed iteration: 51 | logLik: -102425304.523326
+Sat Dec 28 10:18:12 2019 .... Completed iteration: 52 | logLik: -102425261.349713
+Sat Dec 28 10:18:13 2019 .... Completed iteration: 53 | logLik: -102425298.102361
+Sat Dec 28 10:18:14 2019 .... Completed iteration: 54 | logLik: -102425301.985221
+Sat Dec 28 10:18:16 2019 .... Completed iteration: 55 | logLik: -102425255.983828
+Sat Dec 28 10:18:17 2019 .... Completed iteration: 56 | logLik: -102425237.880497
+Sat Dec 28 10:18:18 2019 .... Completed iteration: 57 | logLik: -102425266.636036
+Sat Dec 28 10:18:19 2019 .... Completed iteration: 58 | logLik: -102425261.880256
+Sat Dec 28 10:18:21 2019 .... Completed iteration: 59 | logLik: -102425278.871175
+Sat Dec 28 10:18:22 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:18:46 2019 .... Cluster 96 was reassigned and cluster 130 was split in two.
+Sat Dec 28 10:18:46 2019 .... Completed iteration: 60 | logLik: -102424914.615397
+Sat Dec 28 10:18:47 2019 .... Completed iteration: 61 | logLik: -102424668.874216
+Sat Dec 28 10:18:49 2019 .... Completed iteration: 62 | logLik: -102424738.236102
+Sat Dec 28 10:18:50 2019 .... Completed iteration: 63 | logLik: -102424747.213011
+Sat Dec 28 10:18:51 2019 .... Completed iteration: 64 | logLik: -102424755.888369
+Sat Dec 28 10:18:52 2019 .... Completed iteration: 65 | logLik: -102424766.757505
+Sat Dec 28 10:18:54 2019 .... Completed iteration: 66 | logLik: -102424717.507165
+Sat Dec 28 10:18:55 2019 .... Completed iteration: 67 | logLik: -102424737.807032
+Sat Dec 28 10:18:56 2019 .... Completed iteration: 68 | logLik: -102424738.028645
+Sat Dec 28 10:18:57 2019 .... Completed iteration: 69 | logLik: -102424760.229249
+Sat Dec 28 10:18:58 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:19:22 2019 .... Cluster 46 was reassigned and cluster 128 was split in two.
+Sat Dec 28 10:19:22 2019 .... Completed iteration: 70 | logLik: -102424468.168775
+Sat Dec 28 10:19:23 2019 .... Completed iteration: 71 | logLik: -102424281.803411
+Sat Dec 28 10:19:25 2019 .... Completed iteration: 72 | logLik: -102424245.295754
+Sat Dec 28 10:19:26 2019 .... Completed iteration: 73 | logLik: -102424263.822007
+Sat Dec 28 10:19:27 2019 .... Completed iteration: 74 | logLik: -102424322.519424
+Sat Dec 28 10:19:28 2019 .... Completed iteration: 75 | logLik: -102424248.676928
+Sat Dec 28 10:19:29 2019 .... Completed iteration: 76 | logLik: -102424267.521674
+Sat Dec 28 10:19:31 2019 .... Completed iteration: 77 | logLik: -102424297.244468
+Sat Dec 28 10:19:32 2019 .... Completed iteration: 78 | logLik: -102424198.666978
+Sat Dec 28 10:19:33 2019 .... Completed iteration: 79 | logLik: -102424309.14749
+Sat Dec 28 10:19:34 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:19:58 2019 .... Cluster 146 was reassigned and cluster 73 was split in two.
+Sat Dec 28 10:19:58 2019 .... Completed iteration: 80 | logLik: -102424058.765447
+Sat Dec 28 10:19:59 2019 .... Completed iteration: 81 | logLik: -102423977.37421
+Sat Dec 28 10:20:00 2019 .... Completed iteration: 82 | logLik: -102423907.255062
+Sat Dec 28 10:20:02 2019 .... Completed iteration: 83 | logLik: -102423983.492991
+Sat Dec 28 10:20:03 2019 .... Completed iteration: 84 | logLik: -102423965.928533
+Sat Dec 28 10:20:04 2019 .... Completed iteration: 85 | logLik: -102423953.647358
+Sat Dec 28 10:20:05 2019 .... Completed iteration: 86 | logLik: -102423935.169658
+Sat Dec 28 10:20:06 2019 .... Completed iteration: 87 | logLik: -102423941.033999
+Sat Dec 28 10:20:08 2019 .... Completed iteration: 88 | logLik: -102423994.853113
+Sat Dec 28 10:20:09 2019 .... Completed iteration: 89 | logLik: -102423892.600704
+Sat Dec 28 10:20:10 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:20:34 2019 .... Cluster 26 was reassigned and cluster 58 was split in two.
+Sat Dec 28 10:20:34 2019 .... Completed iteration: 90 | logLik: -102423757.680835
+Sat Dec 28 10:20:35 2019 .... Completed iteration: 91 | logLik: -102423785.782646
+Sat Dec 28 10:20:37 2019 .... Completed iteration: 92 | logLik: -102423739.981373
+Sat Dec 28 10:20:38 2019 .... Completed iteration: 93 | logLik: -102423699.120428
+Sat Dec 28 10:20:39 2019 .... Completed iteration: 94 | logLik: -102423694.954215
+Sat Dec 28 10:20:40 2019 .... Completed iteration: 95 | logLik: -102423810.32355
+Sat Dec 28 10:20:41 2019 .... Completed iteration: 96 | logLik: -102423773.256544
+Sat Dec 28 10:20:43 2019 .... Completed iteration: 97 | logLik: -102423758.212659
+Sat Dec 28 10:20:44 2019 .... Completed iteration: 98 | logLik: -102423743.12661
+Sat Dec 28 10:20:45 2019 .... Completed iteration: 99 | logLik: -102423695.560339
+Sat Dec 28 10:20:46 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:21:10 2019 .... Cluster 108 was reassigned and cluster 23 was split in two.
+Sat Dec 28 10:21:10 2019 .... Completed iteration: 100 | logLik: -102423572.847125
+Sat Dec 28 10:21:12 2019 .... Completed iteration: 101 | logLik: -102423509.322211
+Sat Dec 28 10:21:13 2019 .... Completed iteration: 102 | logLik: -102423439.93852
+Sat Dec 28 10:21:14 2019 .... Completed iteration: 103 | logLik: -102423502.735611
+Sat Dec 28 10:21:15 2019 .... Completed iteration: 104 | logLik: -102423530.343402
+Sat Dec 28 10:21:17 2019 .... Completed iteration: 105 | logLik: -102423444.137577
+Sat Dec 28 10:21:18 2019 .... Completed iteration: 106 | logLik: -102423472.694483
+Sat Dec 28 10:21:19 2019 .... Completed iteration: 107 | logLik: -102423481.751091
+Sat Dec 28 10:21:20 2019 .... Completed iteration: 108 | logLik: -102423489.12027
+Sat Dec 28 10:21:21 2019 .... Completed iteration: 109 | logLik: -102423491.112713
+Sat Dec 28 10:21:23 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:21:47 2019 .... Cluster 22 was reassigned and cluster 74 was split in two.
+Sat Dec 28 10:21:47 2019 .... Completed iteration: 110 | logLik: -102423361.691149
+Sat Dec 28 10:21:48 2019 .... Completed iteration: 111 | logLik: -102423134.199502
+Sat Dec 28 10:21:49 2019 .... Completed iteration: 112 | logLik: -102423074.150487
+Sat Dec 28 10:21:50 2019 .... Completed iteration: 113 | logLik: -102423100.616669
+Sat Dec 28 10:21:52 2019 .... Completed iteration: 114 | logLik: -102423037.343634
+Sat Dec 28 10:21:53 2019 .... Completed iteration: 115 | logLik: -102422987.641181
+Sat Dec 28 10:21:54 2019 .... Completed iteration: 116 | logLik: -102422945.049395
+Sat Dec 28 10:21:55 2019 .... Completed iteration: 117 | logLik: -102422966.550426
+Sat Dec 28 10:21:57 2019 .... Completed iteration: 118 | logLik: -102422921.172714
+Sat Dec 28 10:21:58 2019 .... Completed iteration: 119 | logLik: -102422984.930021
+Sat Dec 28 10:21:59 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:22:24 2019 .... Cluster 40 was reassigned and cluster 32 was split in two.
+Sat Dec 28 10:22:24 2019 .... Completed iteration: 120 | logLik: -102422859.150237
+Sat Dec 28 10:22:25 2019 .... Completed iteration: 121 | logLik: -102422726.288055
+Sat Dec 28 10:22:26 2019 .... Completed iteration: 122 | logLik: -102422759.475303
+Sat Dec 28 10:22:27 2019 .... Completed iteration: 123 | logLik: -102422792.50905
+Sat Dec 28 10:22:29 2019 .... Completed iteration: 124 | logLik: -102422727.445088
+Sat Dec 28 10:22:30 2019 .... Completed iteration: 125 | logLik: -102422729.550001
+Sat Dec 28 10:22:31 2019 .... Completed iteration: 126 | logLik: -102422710.980336
+Sat Dec 28 10:22:32 2019 .... Completed iteration: 127 | logLik: -102422778.264681
+Sat Dec 28 10:22:33 2019 .... Completed iteration: 128 | logLik: -102422812.197704
+Sat Dec 28 10:22:35 2019 .... Completed iteration: 129 | logLik: -102422738.602896
+Sat Dec 28 10:22:36 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:23:00 2019 .... Cluster 47 was reassigned and cluster 16 was split in two.
+Sat Dec 28 10:23:00 2019 .... Completed iteration: 130 | logLik: -102422695.474656
+Sat Dec 28 10:23:01 2019 .... Completed iteration: 131 | logLik: -102422690.861332
+Sat Dec 28 10:23:02 2019 .... Completed iteration: 132 | logLik: -102422762.812438
+Sat Dec 28 10:23:04 2019 .... Completed iteration: 133 | logLik: -102422669.499397
+Sat Dec 28 10:23:05 2019 .... Completed iteration: 134 | logLik: -102422624.23344
+Sat Dec 28 10:23:06 2019 .... Completed iteration: 135 | logLik: -102422657.210527
+Sat Dec 28 10:23:07 2019 .... Completed iteration: 136 | logLik: -102422621.031363
+Sat Dec 28 10:23:08 2019 .... Completed iteration: 137 | logLik: -102422623.793027
+Sat Dec 28 10:23:10 2019 .... Completed iteration: 138 | logLik: -102422637.927496
+Sat Dec 28 10:23:11 2019 .... Completed iteration: 139 | logLik: -102422612.194784
+Sat Dec 28 10:23:12 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:23:36 2019 .... Cluster 38 was reassigned and cluster 111 was split in two.
+Sat Dec 28 10:23:36 2019 .... Completed iteration: 140 | logLik: -102422614.316618
+Sat Dec 28 10:23:37 2019 .... Completed iteration: 141 | logLik: -102422440.194497
+Sat Dec 28 10:23:38 2019 .... Completed iteration: 142 | logLik: -102422373.441876
+Sat Dec 28 10:23:40 2019 .... Completed iteration: 143 | logLik: -102422359.202446
+Sat Dec 28 10:23:41 2019 .... Completed iteration: 144 | logLik: -102422366.80115
+Sat Dec 28 10:23:42 2019 .... Completed iteration: 145 | logLik: -102422381.113655
+Sat Dec 28 10:23:43 2019 .... Completed iteration: 146 | logLik: -102422305.244992
+Sat Dec 28 10:23:44 2019 .... Completed iteration: 147 | logLik: -102422341.28916
+Sat Dec 28 10:23:46 2019 .... Completed iteration: 148 | logLik: -102422344.948711
+Sat Dec 28 10:23:47 2019 .... Completed iteration: 149 | logLik: -102422369.530776
+Sat Dec 28 10:23:48 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:24:13 2019 .... Cluster 95 was reassigned and cluster 124 was split in two.
+Sat Dec 28 10:24:13 2019 .... Completed iteration: 150 | logLik: -102422354.093119
+Sat Dec 28 10:24:14 2019 .... Completed iteration: 151 | logLik: -102422232.729907
+Sat Dec 28 10:24:15 2019 .... Completed iteration: 152 | logLik: -102422192.328029
+Sat Dec 28 10:24:16 2019 .... Completed iteration: 153 | logLik: -102422207.602947
+Sat Dec 28 10:24:17 2019 .... Completed iteration: 154 | logLik: -102422255.25129
+Sat Dec 28 10:24:19 2019 .... Completed iteration: 155 | logLik: -102422241.765497
+Sat Dec 28 10:24:20 2019 .... Completed iteration: 156 | logLik: -102422201.036331
+Sat Dec 28 10:24:21 2019 .... Completed iteration: 157 | logLik: -102422223.806754
+Sat Dec 28 10:24:22 2019 .... Completed iteration: 158 | logLik: -102422235.606481
+Sat Dec 28 10:24:23 2019 .... Completed iteration: 159 | logLik: -102422231.026549
+Sat Dec 28 10:24:25 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:24:49 2019 .... No additional splitting was performed.
+Sat Dec 28 10:24:49 2019 .... Completed iteration: 160 | logLik: -102422226.69075
+Sat Dec 28 10:24:50 2019 .... Completed iteration: 161 | logLik: -102422249.045195
+Sat Dec 28 10:24:51 2019 .... Determining if any gene clusters should be split.
+Sat Dec 28 10:25:15 2019 .... No additional splitting was performed.
+Sat Dec 28 10:25:15 2019 .... Determining if any cell clusters should be split.
+Sat Dec 28 10:25:18 2019 .... No additional splitting was performed.
+Sat Dec 28 10:25:18 2019 .... Completed iteration: 162 | logLik: -102422254.946257
+Sat Dec 28 10:25:18 2019 .. Finished chain 3
+--------------------------------------------------
+Completed Celda_CG. Total time: 39.09455 mins
+--------------------------------------------------
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000706 0.050676 0.070655 0.092399 0.104680 0.950753 
+    
+       1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
+  1    0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  2    0   0   0   0   0   0   0   0 165   0   0   0   0   0   0   0   0   0
+  3    0   0   0   0 235   0   0   0   0   0   0   0   0   0   0   0   0   0
+  4    0   0   0   0   0 371   0   0   0   0   0   0   0   0   0   0   0   0
+  5    0   0 615   0   0   0   2   0   0   0   0   0   0   0   0   0   0   0
+  6    0   0   0   0   0   0   0 371   0   0   0   0   0   0   0   0   0   0
+  7    0   0   1   0   0   0 647   0   0   0   0   0   0   0   0   0   0   0
+  8    0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  37
+  9    0   0   0   2   0   0   0   0   0 301   0   0   0   0   0   0   0   0
+  10   0   0   0 375   0   0   0   0   0   1   0   0   0   0   0   0   0   0
+  11   0   0   0   0   0   0   0   0   0   0   0 531   8   1   0   0   0   0
+  12   0   0   0   0   0   0   0   0   0   0   0   0  72   2   0   0   0   0
+  13   0   0   0   0   0   0   0   0   0   0   0   0   1 321   0   0   0   0
+  14   0   0   0   0   0   0   0   0   0   0 107   0   1   0   0   0   0   0
+  15  13   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  16   0   0   0   0   0   0   0   0   0   0   0   0   0   0  19   0   0   0
+  17   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  18   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  59   0
+  19   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0  71   0   0
+    
+      19
+  1    0
+  2    0
+  3    0
+  4    0
+  5    0
+  6    0
+  7    0
+  8    0
+  9    0
+  10   0
+  11   0
+  12   0
+  13   0
+  14   0
+  15   0
+  16   0
+  17  10
+  18   0
+  19   0
+Saving 7 x 7 in image
+Saving 7 x 7 in image
