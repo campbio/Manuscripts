@@ -1,3 +1,4 @@
+# The combined immune data is sorted PBMCs data
 print("load combined immune data") 
 # load original count matrix 
 mat <- readRDS("/restricted/projectnb/camplab/projects/celda/Datasets/10X/Combined_Immune_Datasets/all_immune_counts.Rds")
