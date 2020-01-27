@@ -34,7 +34,7 @@ dataset.labels = lapply(1:length(all.counts),
 dataset.labels = unlist(dataset.labels)
 
 all.immune.counts = do.call(cbind, all.counts)
-#saveRDS(all.immune.counts, "Combined_Immune_Datasets/all_immune_counts.Rds")
+saveRDS(all.immune.counts, "Combined_Immune_Datasets/all_immune_counts.Rds")
 
 filtered.immune.counts =  all.immune.counts[rowSums(all.immune.counts > 2) > 2, 
                                             colSums(all.immune.counts > 2) > 2] 
