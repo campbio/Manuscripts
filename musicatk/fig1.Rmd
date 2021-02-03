@@ -112,9 +112,8 @@ p <- ggplot(dt, aes(fill=rn, y=value, x=variable)) +
 #Umap + kmeans
 ```{r}
 clust <- cluster_exposure(res, 4)
-plot_kmeans(res, group = "signature", clusters = clust, annotation = "Tumor_Types")
-plot_kmeans(res, group = "annotation", clusters = clust, annotation = "Tumor_Types")
-plot_umap(result = res, color_by = "annotation", annotation = "Tumor_Types", clust = clust)
+plot_cluster(res, group = "signature", clusters = clust, annotation = "Tumor_Types")
+plot_cluster(res, group = "annotation", clusters = clust, annotation = "Tumor_Types")
 ```
 
 #Heatmap
