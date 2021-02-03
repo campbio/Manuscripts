@@ -1,0 +1,94 @@
+---
+title: "figure 2 creation from GDC TCGA Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Datasets
+```{r}
+tcga_datasets <- c("TCGA-LAML", "TCGA-ACC", "TCGA-BLCA", "TCGA-LGG", "TCGA-BRCA", "TCGA-CESC", "TCGA-CHOL", "TCGA-COAD", "TCGA-ESCA", "TCGA-GBM", "TCGA-HNSC", "TCGA-KICH", "TCGA-KIRC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-LUAD", "TCGA-LUSC", "TCGA-DLBC", "TCGA-MESO", "TCGA-OV", "TCGA-PAAD", "TCGA-PCPG", "TCGA-PRAD", "TCGA-READ", "TCGA-SARC", "TCGA-SKCM", "TCGA-STAD", "TCGA-TGCT", "TCGA-THYM", "TCGA-THCA", "TCGA-UCS", "TCGA-UCEC", "TCGA-UVM")
+```
+
+#Download data
+```{r}
+library("TCGAbiolinks")
+types <- sapply(strsplit(tcga_datasets, "-"), '[', 2)
+dataset <- NULL
+annot <- NULL
+for(i in seq_along(tcga_datasets)) {
+  query <- GDCquery(project = tcga_datasets[i], 
+                  data.category = "Simple Nucleotide Variation", 
+                  data.type = "Masked Somatic Mutation", 
+                  workflow.type = "MuTect2 Variant Aggregation and Masking",
+                  experimental.strategy = "WXS",
+                  data.format = "maf")
+  GDCdownload(query)
+  data <- GDCprepare(query)
+  variants <- extract_variants_from_matrix(data)
+  dataset <- rbind(dataset, variants)  
+  annot <- rbind(annot, cbind(rep(types[i], length(unique(variants$sample))), 
+                              unique(as.character(variants$sample))))
+}
+g <- select_genome("38")
+tcga <- create_musica(dataset, g, standardize_indels = FALSE)
+matched_annot <- annot[match(samp_annot(tcga)$Samples, annot[,2]), 1]
+samp_annot(tcga, "Tumor_Types") <- matched_annot
+```
+
+#SBS Umap
+```{r}
+build_standard_table(tcga, g, "SBS96")
+tcga_sbs_subset <- subset_musica_by_counts(tcga, "SBS96", 5)
+tcga_v3_sbs <- withr::with_seed(1, auto_predict_grid(musica = tcga_sbs_subset, 
+                                                          table_name = "SBS96", 
+                                                          signature_res = cosmic_v3_sbs_sigs_exome, 
+                                                          algorithm = "lda",
+                                                     sample_annotation = "Tumor_Types"))
+withr::with_seed(1, create_umap(tcga_v3_sbs))
+plot_umap(tcga_v3_sbs, same_scale = FALSE)
+plot_umap(result = tcga_v3_sbs, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+```
+
+#DBS Umap
+```{r}
+build_standard_table(tcga, g, "DBS78")
+tcga_dbs_subset <- subset_musica_by_counts(tcga, "DBS78", 5)
+tcga_v3_dbs <- withr::with_seed(1, auto_predict_grid(musica = tcga_dbs_subset, 
+                                                          table_name = "DBS78", 
+                                                          signature_res = cosmic_v3_dbs_sigs, 
+                                                          algorithm = "lda",
+                                                     sample_annotation = "Tumor_Types"))
+withr::with_seed(1, create_umap(tcga_v3_dbs))
+plot_umap(tcga_v3_dbs, same_scale = FALSE)
+plot_umap(result = tcga_v3_dbs, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+```
+
+#INDEL Umap
+```{r}
+build_standard_table(tcga, g, "IND83")
+tcga_ind_subset <- subset_musica_by_counts(musica = tcga, table_name = "IND83", num_counts = 5)
+tcga_v3_ind <- withr::with_seed(1, auto_predict_grid(musica = tcga_ind_subset, 
+                                                          table_name = "IND83", 
+                                                            signature_res = cosmic_v3_indel_sigs, 
+                                                          algorithm = "lda",
+                                                     sample_annotation = "Tumor_Types"))
+withr::with_seed(1, create_umap(tcga_v3_ind))
+plot_umap(tcga_v3_ind, same_scale = FALSE, legend = FALSE, strip_axes = TRUE)
+plot_umap(result = tcga_v3_ind, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+#saveRDS(tcga, "~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete.RDS")
+tcga <- readRDS("~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete.RDS")
+```
+
+```{r}
+build_standard_table(tcga, g, "IND83", overwrite = FALSE, verbose = TRUE)
+test <- subset_musica_by_annotation(tcga, "Tumor_Types", "DLBC")
+drop_count_table(test, "IND83")
+build_standard_table(musica = test, g = g, table_name = "IND83", overwrite = TRUE, verbose = TRUE)
+musica = test
+#saveRDS(tcga, "~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete_retable.RDS")
+tcga <- readRDS("~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete_retable.RDS")
+```
+
