@@ -1,0 +1,64 @@
+---
+title: "Prediction/Discovery Tutorial from GDC TCGA Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Datasets
+```{r}
+tcga_datasets <- c("TCGA-CHOL", "TCGA-DLBC", "TCGA-UCS", "TCGA-KICH")
+```
+
+#Download data
+```{r}
+library("TCGAbiolinks")
+types <- sapply(strsplit(tcga_datasets, "-"), '[', 2)
+dataset <- NULL
+annot <- NULL
+for(i in seq_along(tcga_datasets)) {
+  query <- GDCquery(project = tcga_datasets[i], 
+                  data.category = "Simple Nucleotide Variation", 
+                  data.type = "Masked Somatic Mutation", 
+                  workflow.type = "MuTect2 Variant Aggregation and Masking",
+                  experimental.strategy = "WXS",
+                  data.format = "maf")
+  GDCdownload(query)
+  data <- GDCprepare(query)
+  variants <- extract_variants_from_matrix(data)
+  dataset <- rbind(dataset, variants)  
+  annot <- rbind(annot, cbind(rep(types[i], length(unique(variants$sample))), 
+                              unique(as.character(variants$sample))))
+}
+g <- select_genome("38")
+tcga <- create_musica(dataset, g, standardize_indels = FALSE)
+matched_annot <- annot[match(samp_annot(tcga)$Samples, annot[,2]), 1]
+samp_annot(tcga, "Tumor_Types") <- matched_annot
+```
+
+#SBS Umap
+```{r}
+build_standard_table(tcga, g, "SBS96")
+tcga_sbs_subset <- subset_musica_by_counts(tcga, "SBS96", 5)
+tcga_v3_sbs <- withr::with_seed(1, auto_predict_grid(musica = tcga_sbs_subset, 
+                                                          table_name = "SBS96", 
+                                                          signature_res = cosmic_v3_sbs_sigs_exome, 
+                                                          algorithm = "lda",
+                                                     sample_annotation = "Tumor_Types"))
+plot_exposures(tcga_v3_sbs, proportional = TRUE, sort_samples = "SBS46")
+withr::with_seed(1, create_umap(tcga_v3_sbs))
+plot_umap(result = tcga_v3_sbs, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+plot_umap(tcga_v3_sbs, same_scale = FALSE)
+```
+
+#Discover Signatures
+```{r}
+denovo <- discover_signatures(tcga_sbs_subset, "SBS96", k=10, nstart=1)
+plot_signatures(denovo)
+compare_cosmic_v2(denovo)
+plot_exposures(denovo, proportional = TRUE, sort_samples = "Signature2", group_by = "annotation", annotation = "Tumor_Types")
+plot_heatmap(res_annot = denovo, proportional = TRUE, scale = TRUE, annotation = "Tumor_Types")
+```
+

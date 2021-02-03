@@ -1,0 +1,122 @@
+---
+title: "paper_visualizations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Datasets
+```{r}
+tcga_datasets <- c("TCGA-COAD", "TCGA-LUAD", "TCGA-SKCM", "TCGA-UCEC")
+```
+
+#Download data
+```{r}
+library("TCGAbiolinks")
+types <- sapply(strsplit(tcga_datasets, "-"), '[', 2)
+dataset <- NULL
+annot <- NULL
+for(i in seq_along(tcga_datasets)) {
+  query <- GDCquery(project = tcga_datasets[i], 
+                  data.category = "Simple Nucleotide Variation", 
+                  data.type = "Masked Somatic Mutation", 
+                  workflow.type = "MuTect2 Variant Aggregation and Masking",
+                  experimental.strategy = "WXS",
+                  data.format = "maf")
+  GDCdownload(query)
+  data <- GDCprepare(query)
+  variants <- extract_variants_from_matrix(data)
+  dataset <- rbind(dataset, variants)  
+  annot <- rbind(annot, cbind(rep(types[i], length(unique(variants$sample))), 
+                              unique(as.character(variants$sample))))
+}
+g <- select_genome("38")
+musica <- create_musica(dataset, g, standardize_indels = FALSE)
+matched_annot <- annot[match(samp_annot(musica)$Samples, annot[,2]), 1]
+samp_annot(musica, "Tumor_Types") <- matched_annot
+build_standard_table(musica, g, "SBS96")
+```
+
+#Visualization Story Figure
+```{r}
+#Results with 4 signatures
+res = discover_signatures(musica = musica, table_name = "SBS96", 
+                          num_signatures = 4, algorithm = "nmf", 
+                          seed = 12345, nstart = 1, par_cores = 2)
+
+#Basic Exposures plot
+plot_exposures(res, proportional = FALSE, sort_samples = "total", 
+               num_samples = 150)
+plot_exposures(res, proportional = TRUE, sort_samples = "Signature1")
+plot_exposures(res, proportional = TRUE, num_samples = 8, sort_samples = "name")
+
+#Signatures plot
+plot_signatures(res)
+
+#Plot exposures by signature
+plot_exposures(result = res, proportional = TRUE, sort_samples = "total", 
+               plot_type = "box", group_by = "signature", 
+               annotation = "Tumor_Types", color_by = "annotation")
+
+#UMAP
+umap = withr::with_seed(1, create_umap(res))
+plot_umap(result = res, color_by = "annotation", annotation = "Tumor_Types")
+plot_umap(res, "signatures")
+#create ability to take in cluster labels instead of annotation for umap
+
+#Plot exposures by tumor type
+plot_exposures(result = res, proportional = TRUE, sort_samples = "Signature4", 
+               plot_type = "bar", group_by = "annotation", 
+               annotation = "Tumor_Types", color_by = "signature")
+#Plot exposures by tumor type subset to top samples
+plot_exposures(result = res, proportional = TRUE, sort_samples = "Signature4", 
+               plot_type = "bar", group_by = "annotation", 
+               annotation = "Tumor_Types", color_by = "signature", 
+               num_samples = 70)
+
+#Automatic matching to COSMIC v2 Signatures
+compare_cosmic_v2(res, threshold = 0.9)
+```
+
+
+```{r}
+exposure_differential_analysis(musica_result = res, annotation = "Tumor_Types", method = "wilcox", group1 = "COAD", group2 = "UCEC")
+glm_stats <- exposure_differential_analysis(musica_result = res, annotation = "Tumor_Types", method = "glm")
+
+library(data.table)
+#dt <- melt(setDT(glm_stats[, 17:20], keep.rownames = TRUE), "rn")
+dt <- melt(setDT(glm_stats[, 1:4], keep.rownames = TRUE), "rn")
+dt$signif <- ifelse(dt$value < 0.01,1,0)
+
+library(ggplot2)
+library(ggpubr)
+p <- ggplot(dt, aes(fill=rn, y=-log10(value), x=variable)) + 
+    geom_bar(position="dodge", stat="identity") + 
+  geom_hline(yintercept=-log10(0.01), col="red")
+p <- .gg_default_theme(p) + scale_y_continuous(expand = expansion(mult = c(0, .1)))
+
+
+
+p <- ggplot(dt, aes(fill=rn, y=value, x=variable)) + 
+    geom_bar(position="dodge", stat="identity")
+
+
+
+
+ +
+  geom_point(dt[dt$signif == 1, ], aes(fill=rn, y=-log10(value), x=variable))
+```
+
+#Umap + kmeans
+```{r}
+clust <- cluster_exposure(res, 4)
+plot_cluster(res, group = "signature", clusters = clust, annotation = "Tumor_Types")
+plot_cluster(res, group = "annotation", clusters = clust, annotation = "Tumor_Types")
+```
+
+#Heatmap
+```{r}
+plot_heatmap(res_annot = res, proportional = TRUE, scale = TRUE, annotation = "Tumor_Types")
+```
