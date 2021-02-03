@@ -78,17 +78,4 @@ tcga_v3_ind <- withr::with_seed(1, auto_predict_grid(musica = tcga_ind_subset,
 withr::with_seed(1, create_umap(tcga_v3_ind))
 plot_umap(tcga_v3_ind, same_scale = FALSE, legend = FALSE, strip_axes = TRUE)
 plot_umap(result = tcga_v3_ind, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
-#saveRDS(tcga, "~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete.RDS")
-tcga <- readRDS("~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete.RDS")
 ```
-
-```{r}
-build_standard_table(tcga, g, "IND83", overwrite = FALSE, verbose = TRUE)
-test <- subset_musica_by_annotation(tcga, "Tumor_Types", "DLBC")
-drop_count_table(test, "IND83")
-build_standard_table(musica = test, g = g, table_name = "IND83", overwrite = TRUE, verbose = TRUE)
-musica = test
-#saveRDS(tcga, "~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete_retable.RDS")
-tcga <- readRDS("~/Documents/Methods Paper/Written/draft7/gdc_download/tcga_complete_retable.RDS")
-```
-
