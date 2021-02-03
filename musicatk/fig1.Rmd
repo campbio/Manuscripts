@@ -80,33 +80,15 @@ plot_exposures(result = res, proportional = TRUE, sort_samples = "Signature4",
 compare_cosmic_v2(res, threshold = 0.9)
 ```
 
-
+#Differential Expression
 ```{r}
-exposure_differential_analysis(musica_result = res, annotation = "Tumor_Types", method = "wilcox", group1 = "COAD", group2 = "UCEC")
 glm_stats <- exposure_differential_analysis(musica_result = res, annotation = "Tumor_Types", method = "glm")
 
 library(data.table)
-#dt <- melt(setDT(glm_stats[, 17:20], keep.rownames = TRUE), "rn")
 dt <- melt(setDT(glm_stats[, 1:4], keep.rownames = TRUE), "rn")
 dt$signif <- ifelse(dt$value < 0.01,1,0)
-
-library(ggplot2)
-library(ggpubr)
-p <- ggplot(dt, aes(fill=rn, y=-log10(value), x=variable)) + 
-    geom_bar(position="dodge", stat="identity") + 
-  geom_hline(yintercept=-log10(0.01), col="red")
-p <- .gg_default_theme(p) + scale_y_continuous(expand = expansion(mult = c(0, .1)))
-
-
-
-p <- ggplot(dt, aes(fill=rn, y=value, x=variable)) + 
-    geom_bar(position="dodge", stat="identity")
-
-
-
-
- +
-  geom_point(dt[dt$signif == 1, ], aes(fill=rn, y=-log10(value), x=variable))
+ggplot(dt, aes(fill=rn, y=value, x=variable)) + 
+  geom_bar(position="dodge", stat="identity")
 ```
 
 #Umap + kmeans
