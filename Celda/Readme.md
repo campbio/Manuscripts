@@ -1,6 +1,6 @@
 # Celda: A Bayesian model to perform bi-clustering of genes into modules and cells into subpopulations using single-cell RNA-seq data
 
-[**Celda**] (**Ce**llular **L**atent **D**irichlet **A**llocation) is a discrete Bayesian hierarchical model to simultaneously perform bi-clustering of genes into modules and cells into subpopulations for single-cell RNA-seq (scRNA-seq) count data. This repository contains all the scripts needed to reproduce the results in the publication. 
+**Celda** (**Ce**llular **L**atent **D**irichlet **A**llocation) is a discrete Bayesian hierarchical model to simultaneously perform bi-clustering of genes into modules and cells into subpopulations for single-cell RNA-seq (scRNA-seq) count data. This repository contains all the scripts needed to reproduce the results in the publication. 
 
 ## Repository Structure
 
@@ -10,5 +10,5 @@
 
 ## How to regenerate the results
 
-Since the R objects required for each step have already been stored in the Data folder, all R scripts can be run separatelly in a orderless fashion. If you want to regenerate the results without the use of pre-generated R objects, try execute the scripts in this order:
+Since the R objects required for each step have already been stored in the Data folder, all R scripts can be run separatelly in a orderless fashion. If you want to regenerate the results without the use of pre-generated R objects, try executing the scripts in this order:
 **package_environment.R** → **pbmc4kdec.R** → **FigureS1.R** → **Figure2.R** → **Figure3.R** → **Figure4.R** → **Figure5.R** → **Figure6.R** → **FigureS2.R** → **FigureS3.R**
