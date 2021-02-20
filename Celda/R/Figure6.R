@@ -64,6 +64,20 @@ dtm <- melt(dt2, id = c("llist", "beta", "delta"),
 # median ARIs for 6 combinations
 dtm[, .(beta, variable, value)][, lapply(.SD, median), by = .(beta, variable)]
 
+#    beta       variable       value
+# 1:    1 seuratnotieari 0.204252937
+# 2:    5 seuratnotieari 0.062266312
+# 3:   10 seuratnotieari 0.040652365
+# 4:   20 seuratnotieari 0.018268709
+# 5:   30 seuratnotieari 0.009732027
+# 6:   40 seuratnotieari 0.006119745
+# 7:    1     celdacgari 0.983379985
+# 8:    5     celdacgari 0.878275977
+# 9:   10     celdacgari 0.844164017
+# 10:  20     celdacgari 0.572051938
+# 11:  30     celdacgari 0.099428879
+# 12:  40     celdacgari 0.012844124
+
 # median
 dtm1 <- dtm[beta == 1, ]
 dtmed1 <- dtm1[, .(median = median(value),
