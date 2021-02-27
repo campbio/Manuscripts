@@ -7,6 +7,7 @@ library(data.table)
 library(patchwork)
 library(ComplexHeatmap)
 library(gridExtra)
+library(scater)
 
 sce <- readRDS("../Data/sce.rds")
 
@@ -145,6 +146,13 @@ grid.draw(g1)
 dev.off()
 
 
-
-
-
+# Percent variance explained
+sce2 <- SingleCellExperiment(assays = list(
+    counts = seuratobj@assays$RNA@scale.data))
+scaterpca <- scater::runPCA(sce2, ntop = 2000, exprs_values = "counts",
+    ncomponents = 80)
+red <- reducedDim(scaterpca, "PCA")
+str(red)
+attr(red, "percentVar")[1:9]
+# [1] 8.8633114 3.2198463 1.9634761 1.4881054 0.9732545 0.8353006 0.7893381
+# [8] 0.5367381 0.4450517
