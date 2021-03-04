@@ -361,7 +361,7 @@ gb40 <- plotgeneUMAP(dt40)
 umapplots <- arrangeGrob(grobs = list(gb1, gb5, gb10, gb20, gb30, gb40),
     nrow = 1, newpage = FALSE)
 
-figure6 <- arrangeGrob(grobs = list(ariplots, umapplots),
+figure6 <- arrangeGrob(grobs = list(umapplots, ariplots),
     nrow = 2, newpage = FALSE)
 
 pdf("../Figures/Figure6.pdf", width = 22)
