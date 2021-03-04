@@ -1,0 +1,346 @@
+---
+title: "Association of gene expression with WGD"
+author: "Yusuke Koga, Neha Parulekar, Joshua D. Campbell"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    code_folding: hide
+  html_notebook: default
+
+---
+
+# Set up package environment
+
+We first want to install all of the packages used in this analysis. We use the package `renv` as a way to manage package versions. The following code was initially run to set up the package library.
+
+```{r renv, eval = FALSE}
+install.packages("renv")
+library(renv)
+
+renv::init(bare = TRUE)
+install.packages("BiocManager")
+library(BiocManager)
+install.packages(c("ggplot2", "magrittr", "knitr", "kableExtra", "ggrepel",
+                   "stringr", "circlize", "ComplexHeatmap", "metap","limma",
+                   "devtools", "rmarkdown", "formatR", "bitops", "caTools"),
+                 repo = BiocManager::repositories())
+devtools::install_github("montilab/hypeR")
+renv::snapshot()
+```
+
+If you are attempting to reproduce this analysis, you can 1) install/load `renv`, 2) copy/paste the `renv.lock` file into your current working directory and 3) run the `renv::restore()` command to automatically install all of the packages with the same version. 
+
+```{r example_restore, eval = FALSE}
+# Make sure the 'renv.lock' file is in your current working directory.
+install.packages("renv")
+library(renv)
+renv::restore()
+```
+
+# Load in scripts and R packages
+
+First, R packages will be loaded and scripts will be sourced.
+
+```{r library, message = FALSE, warning = FALSE}
+source("lm_utils.R")
+source("lm_expression_with_cnv.R")
+library(ggplot2)
+library(magrittr)
+library(knitr)
+library(kableExtra)
+library(ggrepel)
+library(hypeR)
+library(stringr)
+library(circlize)
+library(ComplexHeatmap)
+library(metap)
+library(limma)
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+
+dir.create("Enrichment_Results", showWarnings = FALSE)
+dir.create("LM_Results", showWarnings = FALSE)
+```
+
+
+We need to read in the expression matrix, ABSOLUTE calls, and copy ratio matrix.The expression matrix was obtained from (and was gzipped):
+
+`http://api.gdc.cancer.gov/data/3586c0da-64d0-4b74-a449-5ff4d9136611`
+
+The ABSOLUTE purity/ploidy estimates were obtained from:
+
+`http://api.gdc.cancer.gov/data/4f277128-f793-4354-a13d-30cc7fe9f6b5`
+
+The copy ratio matrix was obtained by running GISTIC2.0 on the seg file obtained from:
+
+`http://api.gdc.cancer.gov/data/00a32f7a-c85f-4f86-850d-be53973cbc4d`
+
+Clinical data with tumor type information was obtained from:
+
+`http://api.gdc.cancer.gov/data/4f277128-f793-4354-a13d-30cc7fe9f6b5`
+
+```{r read_data}
+# Read in and process RNA-seq data
+expression = read.table(gzfile("../../Data/EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv.gz"), header=TRUE, stringsAsFactors = FALSE, sep = "\t", check.names = FALSE, row.names = 1)
+expression.gene.name = t(as.data.frame(strsplit(rownames(expression), "\\|")))
+i = expression.gene.name[,1] == '?' | expression.gene.name[,1] == "SLC35E2"
+expression = log2(expression[!i,] + 1)
+rownames(expression) = expression.gene.name[!i,1]
+colnames(expression) = substring(colnames(expression), 1, 15)
+
+# Read in ABSOLUTE data
+absolute = read.table("../../../Mutation/Data/TCGA_mastercalls.abs_tables_JSedit.fixed.txt", header = TRUE, stringsAsFactors = FALSE, sep = "\t", row.names = 1)
+absolute$WGD_Status = factor(ifelse(absolute$Genome.doublings > 0, "Yes", "No"), levels = c("No", "Yes"))
+
+# Read in and process CNV ratios from GISTIC
+cnv = read.table(gzfile("../../Data/all_data_by_genes_whitelisted.tsv.gz"), sep = "\t", header = TRUE, stringsAsFactors = FALSE, check.names = FALSE, row.names = 1)
+cnv.info = cnv[,1:2]
+cnv = as.matrix(cnv[,-(1:2)])
+colnames(cnv) = substring(colnames(cnv), 1, 15)
+chrom = str_match(cnv.info[,2], "^(\\w+)[pq]")
+cnv.info = cbind(cnv.info, Chrom=factor(chrom[,2], levels=c(1:22, "X", "Y")))
+
+# Read in clinical information and get tumor type info
+clin = read.table(gzfile("../../Data/clinical_PANCAN_patient_with_followup.tsv.gz"), sep = "\t", header = TRUE, stringsAsFactors = FALSE, quote = "", row.names = 2)
+clin = subset(clin, !is.na(acronym))
+
+# Get initial overlap of tumors between 3 assays
+tumor.overlap = intersect(intersect(colnames(expression), rownames(absolute)), colnames(cnv))
+
+# Subset to primary tumors
+tumor.overlap = tumor.overlap[substring(tumor.overlap, 14, 15) == "01"]
+
+# Suset to tumors with annotated tumor type
+tumor.overlap = tumor.overlap[substring(tumor.overlap, 1, 12) %in% rownames(clin)]
+
+# Get gene overlap between gene and cnv assays and expression across at least 10% of samples
+gene.overlap.initial = intersect(rownames(expression), rownames(cnv))
+percent.absent = rowSums(is.na(expression[,tumor.overlap]) | expression[,tumor.overlap] == 0) / length(tumor.overlap)
+gene.overlap = intersect(rownames(expression)[percent.absent < 0.90], rownames(cnv))
+
+# Subset assays
+cnv.overlap = cnv[gene.overlap,tumor.overlap]
+expression.overlap = expression[gene.overlap,tumor.overlap]
+absolute.overlap = absolute[tumor.overlap,]
+cnv.info.overlap = cnv.info[gene.overlap,]
+tumor.type = clin[substring(colnames(expression.overlap), 1, 12), "acronym"]
+
+rm(expression)
+rm(cnv)
+```
+
+# Association of expression with WGS status
+
+We will iterate through all tumor types and identify genes that are differentially expressed with respect to WGD status while controlling for purity and local copy number.
+
+```{r expression_analysis}
+tumor.type.ids = unique(tumor.type)
+result = list()
+for(i in tumor.type.ids) {
+  cat("Analyzing", i, "...\n")
+  
+  # Subset to tumors within a tumor type and to genes consistently expressed
+  ix = tumor.type == i
+  covars = absolute.overlap[ix,c("WGD_Status", "purity")]
+  
+  temp.res = lm_expression_with_cnv(expression.overlap[,ix],
+                                    cnv.overlap[,ix],
+                                    covars)
+  
+  # Save to file
+  fn = paste0("LM_Results/LM_Exp_tilde_CNV_WGD_Purity_", i, ".txt.gz")
+  write.table(temp.res, gzfile(fn), row.names=FALSE, sep="\t", quote = FALSE)
+  
+  result[[i]] = temp.res
+}
+```
+
+# Generate Heatmaps {.tabset .tabset-fade}
+
+A heatmap will be generated for the top 50 up- and down-regulated genes using the `ComplexHeatmap` package. Each tumor type is plotted on a separate tab.
+
+```{r heatmaps, results="asis"}
+n.show = 50
+
+# Set up column color bars
+purity_col = colorRamp2(c(0, 25, 50, 75, 100)/100, c("blue", "green", "yellow", "orange", "red"))
+
+# Set up row color bars
+set.seed(123)
+cnv.col = sample(colors(distinct = TRUE), 24)
+names(cnv.col) = levels(cnv.info.overlap$Chrom)
+
+for(i in names(result)) {
+  ix = tumor.type == i
+  deg.list = c()
+  up = subset(result[[i]], WGD_Status_FDR < 0.05 & WGD_Status_Estimate > 0)
+  if(nrow(up) > 0) {
+    up.o = up[order(up$WGD_Status_Estimate, decreasing = TRUE),]
+    deg.list = c(deg.list, head(as.character(up.o[,1]), n.show))
+  }
+  
+  down = subset(result[[i]], WGD_Status_FDR < 0.05 & WGD_Status_Estimate < 0)
+  if(nrow(down) > 0) {
+    down.o = down[order(down$WGD_Status_Estimate, decreasing = FALSE),]
+    deg.list = c(deg.list, head(as.character(down.o[,1]), n.show))
+  }
+  
+  if(length(deg.list) == 0) {
+    next()
+  }
+  # Subset and scale data
+  deg.data = t(scale(t(expression.overlap[deg.list, ix])))
+  deg.data[deg.data < -2] = -2
+  deg.data[deg.data > 2] = 2
+
+  column_ha = HeatmapAnnotation(df = absolute.overlap[ix,c("WGD_Status", 
+                                                           "purity")],
+                              col = list(purity = purity_col,
+                                          WGD_Status = c("Yes" = "black",
+                                                        "No" = "White")))
+
+  row_ha = rowAnnotation(df=cnv.info.overlap[rownames(deg.data),3,drop=F],
+                       col=list(Chrom=cnv.col))
+  
+  cat(paste0('## ', i, ' \n\n'))
+  draw(Heatmap(deg.data, 
+          show_column_names = FALSE,
+          top_annotation = column_ha,
+          left_annotation = row_ha,
+          row_names_gp = gpar(fontsize=5),
+          use_raster = TRUE))
+  cat(' \n\n')
+}
+
+```
+
+# Perform functional enrichment {.tabset .tabset-fade}
+
+Functional enrichment using the `hypeR` package will identify classes of genes enriched in genes associated with WGD status in each tumor type. We will use Hallmark gene sets (H) from MSigDB. Tables will be saved to the `Enrichment_Results` folder. We will examine genes with FDR < 0.05 with respect to WGD status in each tumor type. Functional enrichment is performed separately for up and down-regulated genes within each tumor type.
+
+```{r hypeR, results="asis"}
+# Examine hallmark genes only
+hallmark = msigdb_gsets(species="Homo sapiens", category="H")
+gs = hallmark
+
+# Cycle through each tumor type, perform enrichment, and save tables
+for(i in names(result)) {
+  ix = tumor.type == i
+  up = as.character(subset(result[[i]], WGD_Status_FDR < 0.05 & WGD_Status_Estimate > 0)$Gene)
+  if(length(up) > 0) {
+    up.enrich = hypeR(up, gs)  
+    hyp_to_table(up.enrich,
+               file.path("Enrichment_Results",
+                         paste0(i, "_Up.txt")))
+  }
+
+  down = as.character(subset(result[[i]], WGD_Status_FDR < 0.05 & WGD_Status_Estimate < 0)$Gene)
+  if(length(down) > 0) {
+    down.enrich = hypeR(down, gs)  
+    hyp_to_table(down.enrich,
+               file.path("Enrichment_Results",
+                         paste0(i, "_Down.txt")))
+  }
+  
+  
+  cat(paste0('## ', i, ' {.tabset} \n\n'))
+  cat(paste0('### Up \n\n'))
+  
+  d = subset(up.enrich$data, fdr < 0.1)
+  print(kableExtra::kable(d, style = 'html', row.names = FALSE) %>% kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%"))
+  
+  cat('\n\n')
+  cat(paste0('### Down \n\n'))
+  
+  d = subset(down.enrich$data, fdr < 0.1)
+  print(kableExtra::kable(d, style = 'html', row.names = FALSE) %>% kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%"))
+
+  cat('\n\n')
+  cat('\n\n')
+}
+```
+
+
+# Functional analysis of common hits across tumor types 
+
+Finally, we will identify genes commonly up- or down-regulated across tumor types and perform functional enrichment on these genes as well. Genes up-regulated or down-regulated with FDR < 0.05 in more than 10 tumor types were examined with `hypeR`.
+
+```{r combined_analysis}
+top.hits <- c("BUB1B", "MAD2L1", "CAPZB", "UBC",
+              "CCT2", "ARIH1", "FBL", "FBXO5", "KIF18A",
+              "LONP1", "PSMC1", "RAD51", "RANGAP1",
+              "SEC13", "SMU1", "TUBB", "WDR5")
+
+# Combine FDR values into a single vector for display
+combined.fdr = sapply(result, function(i) i$WGD_Status_FDR, simplify = TRUE)
+rownames(combined.fdr) = rownames(expression.overlap)
+colnames(combined.fdr) = paste0("FDR_", colnames(combined.fdr))
+fdr.fisher = apply(combined.fdr, 1,
+                   function(p) as.numeric(sumlog(as.numeric(na.omit(p)))$p))
+
+
+combined.estimate = sapply(result, function(i) i$WGD_Status_Estimate, simplify = TRUE)
+rownames(combined.estimate) = rownames(expression.overlap)
+colnames(combined.estimate) = paste0("Estimate_", colnames(combined.estimate))
+estimate.avg = apply(combined.estimate, 1, mean, na.rm=TRUE) 
+
+tumor.up.total = apply(combined.fdr < 0.05 & combined.estimate > 0, 1, sum, na.rm=TRUE)
+tumor.down.total = apply(combined.fdr < 0.05 & combined.estimate < 0, 1, sum, na.rm=TRUE)
+
+# Get lists of genes up or down-regulated in at least 10 tumor types
+tumor.up.genes = names(tumor.up.total)[tumor.up.total > 10]
+tumor.down.genes = names(tumor.down.total)[tumor.down.total > 10]
+tumor.enrich.up = hypeR(tumor.up.genes, gs)
+tumor.enrich.down = hypeR(tumor.down.genes, gs)
+
+# Save tables
+hyp_to_table(tumor.enrich.up, "Enrichment_Results/Genes_Up_InAtLeast_10_TumorTypes.txt")
+hyp_to_table(tumor.enrich.down, "Enrichment_Results/Genes_Down_InAtLeast_10_TumorTypes.txt")
+
+# Plot Results
+label = names(estimate.avg)
+label[!(label %in% top.hits)] = ""
+df = data.frame(Gene = names(estimate.avg),
+                Average_FC = estimate.avg,
+                Combined_FDR = fdr.fisher,
+                Combined_FDR_NegLog10 = -log10(fdr.fisher),
+                Hits = ifelse(label == "", "black", "red"),
+                label = label,
+                combined.estimate, combined.fdr,
+                Total_Upregulated_FDR05 = tumor.up.total,
+                Total_Downregulated_FDR05 = tumor.down.total)
+ggplot(df, aes(x=Average_FC, y=Combined_FDR_NegLog10, label=label)) + geom_point(aes(color=Hits)) +
+	geom_label_repel(segment.color="red",
+	                 box.padding=0.5,
+	                 force=2) +
+  theme_bw() +
+	scale_color_manual(values=c("black", "red")) +
+	xlab("Average Fold Change (Log2)") +
+	ylab("Combined FDR q-value (-Log10)") +
+	theme(legend.position="none")
+
+write.table(df, "PanCan_Differential_Expression_Summary.txt", sep="\t", row.names = FALSE, quote = FALSE)
+```
+
+## The table of the top enriched pathways among "up" genes
+
+```{r hyp_table_up, results="asis"}
+d = subset(tumor.enrich.up$data, fdr < 0.1)
+print(kableExtra::kable(d, style = 'html', row.names = FALSE) %>% kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%"))
+```
+
+## The table of the top enriched pathways among "down" genes
+
+```{r hyp_table_down, results="asis"}
+d = subset(tumor.enrich.down$data, fdr < 0.1)
+print(kableExtra::kable(d, style = 'html', row.names = FALSE) %>% kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%"))
+```
+
+# Session information
+
+```{r session}
+sessionInfo()
+```
+
+

@@ -1,0 +1,214 @@
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> source("~/GIT/utilities/R/lm_utils.R")
+> source("~/GIT/utilities/R/mut_utils.R")
+> library(stringr)
+> 
+> ceres.17q2 <- read.table(gzfile("../../Data/gene_effect_17Q2.csv.gz"), header = T, sep = ",", row.names=1, check.names=F)
+> ceres.18q3 <- t(read.table(gzfile("../../Data/gene_effect_18Q3.csv.gz"), header = T, sep = ",", row.names=1, check.names=F))
+> ceres.combined.18q3 <- read.table(gzfile("../../Data/D2_combined_gene_dep_scores_18Q3.csv.gz"), header = T, sep = ",", row.names=1, check.names=F)
+> ceres.combined.18q3 = ceres.combined.18q3[rowSums(is.na(ceres.combined.18q3)) < 5,]
+> Absolute_data <- read.table("../../Data/CCLE_combined.table.txt", header = T, sep = "\t", row.names=1)
+> 
+> 
+> enrich = function(ceres.data, absolute, cutoff = -1) {
++   require(pROC)
++   i = intersect(colnames(ceres.data), absolute[,1])
++   abs.i = Absolute_data[i,]
++   wgd = ifelse(abs.i$Genome.doublings > 0, "WGD", "Not_WGD")
++ 
++   ceres.i = ceres.data[,i]
++ 
++   res.fet.full = fet(ceres.i < cutoff, wgd, reorder=FALSE)
++   colnames(res.fet.full) = paste0("FET_", colnames(res.fet.full))
++   res.wilcox.full = wilcoxon(ceres.i, wgd, sort=FALSE)  
++   colnames(res.wilcox.full) = paste0("Wilcoxon_", colnames(res.wilcox.full))
++     
++   ceres.i.select = rowSums(ceres.i < cutoff) > 4
++   fet.select.fdr = res.fet.full$FET_Pvalue
++   fet.select.fdr[!ceres.i.select] = NA
++   fet.select.fdr = p.adjust(fet.select.fdr, 'fdr')
++   wilcox.select.fdr = res.wilcox.full$Wilcoxon_Pvalue
++   wilcox.select.fdr[!ceres.i.select] = NA
++   wilcox.select.fdr = p.adjust(wilcox.select.fdr, 'fdr')
++   
++   auc = rep(NA, nrow(ceres.i))
++   for(j in 1:nrow(ceres.i)) {
++     auc[j] = auc(roc(as.factor(wgd), as.numeric(ceres.i[j,])))
++   }
++   res = data.frame(res.fet.full, "FET_FDR_Filter"=fet.select.fdr, AUC=auc, res.wilcox.full, "Wilcoxon_FDR_Filter"=wilcox.select.fdr)
++   return(list(res=res, data=rbind(WGD=wgd, ceres.i)))
++ }
+> 
+> 
+> getTumorType = function(cn) {
++   s = str_split(cn, "_", simplify=T)
++   s2 = s[,-1]
++   s3 = apply(s2, 1, paste, collapse="_")
++   s4 = gsub("_+$", "", s3)
++   return(s4)
++ }
+> 
+> ceres.17q2.tt = getTumorType(colnames(ceres.17q2))
+> ceres.18q3.tt = getTumorType(colnames(ceres.18q3))
+> ceres.combined.18q3.tt = getTumorType(colnames(ceres.combined.18q3))
+> 
+> tumor.type = unique(c(ceres.17q2.tt, ceres.18q3.tt, ceres.combined.18q3.tt))
+> min.n = 20
+> for(i in tumor.type) { 
++   print(i)
++   ix = ceres.17q2.tt == i
++   cn = intersect(colnames(ceres.17q2)[ix], rownames(Absolute_data))
++   if(length(cn) >= min.n) {
++     print("CERES 17q2")
++ 	res.ceres.17q2 = enrich(ceres.17q2[,cn], Absolute_data[cn,])
++ 	fn = paste0("20181220_CERES_", i, "_17Q2_WGD_results.txt")
++ 	write.table(res.ceres.17q2$res, fn, quote=FALSE, row.names=FALSE, sep="\t")
++ 	fn = paste0("20181108_CERES_", i, "_17Q2_WGD_data.txt")
++ 	write.table(data.frame(Gene=rownames(res.ceres.17q2$data), res.ceres.17q2$data), fn, quote=FALSE, row.names=FALSE, sep="\t")
++   }
++   ix = ceres.18q3.tt == i
++   cn = intersect(colnames(ceres.18q3)[ix], rownames(Absolute_data))
++   if(length(cn) >= min.n) {  
++     print("CERES 18q3")  
++ 	res.ceres.18q3 = enrich(ceres.18q3[,cn], Absolute_data[cn,])
++ 	fn = paste0("20181220_CERES_", i, "_18Q3_WGD_results.txt")
++ 	write.table(res.ceres.18q3$res, fn, quote=FALSE, row.names=FALSE, sep="\t")
++ 	fn = paste0("20181220_CERES_", i, "_18Q3_WGD_data.txt")  
++ 	write.table(data.frame(Gene=rownames(res.ceres.18q3$data), res.ceres.18q3$data), fn, quote=FALSE, row.names=FALSE, sep="\t")
++   }
++   ix = ceres.combined.18q3.tt == i
++   cn = intersect(colnames(ceres.combined.18q3)[ix], rownames(Absolute_data))
++   if(length(cn) >= min.n) {
++     print("CERES Combined 18q3")
++     res.ceres.combined = enrich(ceres.combined.18q3[,cn], Absolute_data[cn,])
++     fn = paste0("20181108_D2combined_", i, "_18Q3_WGD_results.txt")
++     write.table(res.ceres.combined$res, fn, quote=FALSE, row.names=FALSE, sep="\t")
++     fn = paste0("20181220_D2combined_", i, "_18Q3_WGD_data.txt")  
++     write.table(data.frame(Gene=rownames(res.ceres.combined$data), res.ceres.combined$data), fn, quote=FALSE, row.names=FALSE, sep="\t")
++   }  
++ }
+[1] "BONE"
+[1] "CENTRAL_NERVOUS_SYSTEM"
+[1] "CERES 17q2"
+Loading required package: pROC
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Loading required package: reshape2
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "URINARY_TRACT"
+[1] "CERES 18q3"
+[1] "OVARY"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "KIDNEY"
+[1] "CERES Combined 18q3"
+[1] "THYROID"
+[1] "SKIN"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "LUNG"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "STOMACH"
+[1] "CERES Combined 18q3"
+[1] "PANCREAS"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "BREAST"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "UPPER_AERODIGESTIVE_TRACT"
+[1] "LARGE_INTESTINE"
+[1] "CERES 17q2"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "AUTONOMIC_GANGLIA"
+[1] "ENDOMETRIUM"
+[1] "CERES Combined 18q3"
+[1] "SOFT_TISSUE"
+[1] "LIVER"
+[1] "HAEMATOPOIETIC_AND_LYMPHOID_TISSUE"
+[1] "CERES 18q3"
+[1] "CERES Combined 18q3"
+[1] "OESOPHAGUS"
+[1] "CERES Combined 18q3"
+[1] "PLEURA"
+[1] "CERVIX"
+[1] "PROSTATE"
+[1] "UVEA"
+[1] "SALIVARY_GLAND"
+[1] "GASTROINTESTINAL_TRACT"
+[1] "SMALL_INTESTINE"
+[1] "BILIARY_TRACT"
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> res.ceres.17q2 = enrich(ceres.17q2, Absolute_data)
+> res.ceres.18q3 = enrich(ceres.18q3, Absolute_data)
+> res.ceres.combined = enrich(ceres.combined.18q3, Absolute_data)
+> 
+> write.table(res.ceres.17q2$res, "20181220_CERES_17Q2_WGD_results.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> write.table(data.frame(Gene=rownames(res.ceres.17q2$data), res.ceres.17q2$data), "20181220_CERES_17Q2_WGD_data.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> write.table(res.ceres.18q3$res, "20181220_CERES_18Q3_WGD_results.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> write.table(data.frame(Gene=rownames(res.ceres.18q3$data), res.ceres.18q3$data), "20181220_CERES_18Q3_WGD_data.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> write.table(res.ceres.combined$res, "20181220_D2combined_18Q3_WGD_results.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> write.table(data.frame(Gene=rownames(res.ceres.combined$data), res.ceres.combined$data), "20181220_D2combined_18Q3_WGD_data.txt", quote=FALSE, row.names=FALSE, sep="\t")
+> 
+> 
+> sessionInfo()
+R version 3.5.1 (2018-07-02)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS  10.14.2
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] reshape2_1.4.3 pROC_1.13.0    stringr_1.3.1 
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.0       assertthat_0.2.0 dplyr_0.7.8      crayon_1.3.4    
+ [5] R6_2.3.0         grid_3.5.1       plyr_1.8.4       gtable_0.2.0    
+ [9] magrittr_1.5     scales_1.0.0     ggplot2_3.1.0    pillar_1.3.0    
+[13] rlang_0.3.0.1    stringi_1.2.4    lazyeval_0.2.1   bindrcpp_0.2.2  
+[17] tools_3.5.1      glue_1.3.0       purrr_0.2.5      munsell_0.5.0   
+[21] compiler_3.5.1   pkgconfig_2.0.2  colorspace_1.3-2 tidyselect_0.2.5
+[25] bindr_0.1.1      tibble_1.4.2    
+> 
