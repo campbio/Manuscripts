@@ -1,0 +1,103 @@
+---
+title: "musicatk BioC2021 Workshop"
+author: Aaron Chevalier^[atgc@bu.edu]
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{musicatk BioC2021 Workshop}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Workshop Title
+
+Authors:
+    Aaron Chevalier^[Boston University],
+    Joshua D. Campbell^[Boston University].
+    <br/>
+Last modified: 8 March, 2021.
+
+## Overview
+
+### Description
+
+Mutational signatures are carcinogenic exposures or aberrant cellular processes that can cause alterations to the genome. We created musicatk (MUtational SIgnature Comprehensive Analysis ToolKit) to address shortcomings in versatility and ease of use in other pre-existing computational tools. Although many different types of mutational data have been generated, current software packages do not have a flexible framework to allow users to mix and match different types of mutations in the mutational signature inference process. Musicatk enables users to count and combine multiple mutation types, including SBS, DBS, and indels. Musicatk calculates replication strand, transcription strand and combinations of these features along with discovery from unique and proprietary genomic feature associated with any mutation type. Musicatk also implements several methods for discovery of new signatures as well as methods to infer exposure given an existing set of signatures. Musicatk provides functions for visualization and downstream exploratory analysis including the ability to compare signatures between cohorts and find matching signatures in COSMIC V2 or COSMIC V3. 
+
+The workshop includes a brief lecture describing mutational signatures and musicatk, a live follow-along demo, and a lab where attendants can run their own data with assistance from the author, or run additional prepared material and ask questions about the package.
+
+### Pre-requisites
+
+* Basic knowledge of R syntax
+* Familiarity with musicatk vignette https://github.com/campbio/musicatk/blob/master/vignettes/musicatk.Rmd
+* Watch tutorial videos and try out tutorial notebook https://github.com/campbio/Manuscripts/tree/master/musicatk/
+
+Make sure you can run the examples and have all the data downloaded for the tutorials 
+
+*Preprint of musicatk package: https://www.biorxiv.org/content/10.1101/2020.11.17.385864v1
+
+* If unfamiliar with mutational signatures as a field
+Landmark Paper for COSMIC v2: https://www.nature.com/articles/nature12477
+Landmark Paper for COSMIC v3: https://www.nature.com/articles/s41586-020-1943-3
+COSMIC Signatures resource: https://cancer.sanger.ac.uk/cosmic/signatures/index.tt
+
+### Participation
+
+Run the exercises and bring your own data to try out analyses
+
+### _R_ / _Bioconductor_ packages used
+
+"musicatk", "BSgenome", "rmarkdown", "knitr", "TCGAbiolinks",  "devtools"
+
+### Time outline
+
+An example for a 45-minute workshop:
+
+| Activity                     | Time |
+|------------------------------|------|
+| Brief introduction           | 5m   |
+| Tutorial Run-through         | 20m  |
+| Q&A                          | 20m  |
+
+An example for a 2-hour workshop:
+
+| Activity                     | Time |
+|------------------------------|------|
+| Brief introduction           | 5m   |
+| Prediction Tutorial          | 20m  |
+| Discovery Tutorial           | 20m  |
+| Q&A                          | 20m  |
+| User data hands-on help      | 55m  |
+
+### Workshop goals and objectives
+
+The objective of this workshop is to give attendants familiarity with the musicatk package and methods using real data. In addition, attendants can bring their own variant data to analyze as well with help and instruction from the maintainers.
+
+### Learning goals
+
+* Import multiple file types into musicatk
+* Discover novel mutational signatures
+* Predict exposure of samples to existing mutational signatures
+* Basic plotting of results
+* Analysis of results using musicatk
+
+### Learning objectives
+
+* Input and preprocess mutational data
+* Build mutation count tables
+* Discover novel mutational signatures
+* Predict sample exposures from existing mutational signatures
+* Plot mutational signatures
+* Plot sample exposures
+* Advanced plotting gridded by sample-level annotations
+* Discovery gridding by k-value and sample-level annotations
+* Automatic heuristic signature selection for prediction
+* Creation of sample exposure heatmaps
+* Creation of sample exposure UMAPs
+* Differential analysis of sample exposures
