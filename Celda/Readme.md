@@ -10,5 +10,5 @@
 
 ## How to regenerate the results
 
-Since the R objects required for each step have already been stored in the Data folder, all R scripts can be run separatelly in a orderless fashion. If you want to regenerate the results without the use of pre-generated R objects, try executing the scripts in this order:
+Since the R objects required for each step have already been stored in the Data folder, all R scripts can be run separately in a orderless fashion. If you want to regenerate the results without the use of pre-generated R objects, try executing the scripts in this order:
 **package_environment.R** → **pbmc4kdec.R** → **FigureS1.R** → **Other .R files**
