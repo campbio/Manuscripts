@@ -46,12 +46,12 @@ library(Seurat)
 }
 
 # See scripts in Figure6_simulations for simulation details
-b1 <- fread("../Data/Figure6_simulations/simulated_2000var_beta1_delta1.csv")
-b5 <- fread("../Data/Figure6_simulations/simulated_2000var_beta5_delta5.csv")
-b10 <- fread("../Data/Figure6_simulations/simulated_2000var_beta10_delta10.csv")
-b20 <- fread("../Data/Figure6_simulations/simulated_2000var_beta20_delta20.csv")
-b30 <- fread("../Data/Figure6_simulations/simulated_2000var_beta30_delta30.csv")
-b40 <- fread("../Data/Figure6_simulations/simulated_2000var_beta40_delta40.csv")
+b1 <- fread("../data/Figure6_simulations/simulated_2000var_beta1_delta1.csv")
+b5 <- fread("../data/Figure6_simulations/simulated_2000var_beta5_delta5.csv")
+b10 <- fread("../data/Figure6_simulations/simulated_2000var_beta10_delta10.csv")
+b20 <- fread("../data/Figure6_simulations/simulated_2000var_beta20_delta20.csv")
+b30 <- fread("../data/Figure6_simulations/simulated_2000var_beta30_delta30.csv")
+b40 <- fread("../data/Figure6_simulations/simulated_2000var_beta40_delta40.csv")
 
 dt <- rbind(b1, b5, b10, b20, b30, b40)
 
@@ -364,6 +364,6 @@ umapplots <- arrangeGrob(grobs = list(gb1, gb5, gb10, gb20, gb30, gb40),
 figure6 <- arrangeGrob(grobs = list(umapplots, ariplots),
     nrow = 2, newpage = FALSE)
 
-pdf("../Figures/Figure6.pdf", width = 22)
+pdf("../results/Figure6.pdf", width = 22)
 grid.draw(figure6)
 dev.off()

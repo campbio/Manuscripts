@@ -10,7 +10,7 @@ library(ComplexHeatmap)
 library(gridExtra)
 library(scater)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 L <- 80
 
@@ -142,7 +142,7 @@ g1 <- pchmdims(seuratobj, seq(9), nrow = 3, ncol = 3,
     padding = unit(c(6, padlr, 6, padlr), "points"),
     col = col2)
 
-pdf("../Figures/FigureS4.pdf")
+pdf("../results/FigureS4.pdf")
 grid.draw(g1)
 dev.off()
 

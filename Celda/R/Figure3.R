@@ -5,7 +5,7 @@ library(ComplexHeatmap)
 library(ggplot2)
 library(gridExtra)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 panel_fun = function(index, nm = NULL) {
     topFeatures <- NULL
@@ -235,6 +235,6 @@ g4 <- celdaProbabilityMap(sce,
                 lwd = 1)),
         show_legend = FALSE))
 
-pdf("../Figures/Figure3.pdf", width = 18, height = 12)
+pdf("../results/Figure3.pdf", width = 18, height = 12)
 draw(gprob[, 1] + g4[, 2])
 dev.off()

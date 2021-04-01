@@ -1,12 +1,12 @@
 library(celda)
 library(ggplot2)
 
-pbmc4kdec <- readRDS("../Data/pbmc4kdec.rds")
+pbmc4kdec <- readRDS("../data/pbmc4kdec.rds")
 
 # selecting the number of L and K
 rsm <- recursiveSplitModule(pbmc4kdec, useAssay = "decontXcounts", maxL = 200)
-saveRDS(rsm, file = "../Data/rsm.rds")
-rsm <- readRDS("../Data/rsm.rds")
+saveRDS(rsm, file = "../data/rsm.rds")
+rsm <- readRDS("../data/rsm.rds")
 
 rsmp <- plotGridSearchPerplexity(rsm, sep = 10)
 rsmp <- rsmp + scale_x_discrete(breaks = seq(0, 200, 20),
@@ -36,8 +36,8 @@ rsc <- recursiveSplitCell(pbmc4kfL80,
     maxK = 30,
     yInit = celdaModules(pbmc4kfL80))
 
-saveRDS(rsc, file = "../Data/rsc_l80.rds")
-rsc <- readRDS("../Data/rsc_l80.rds")
+saveRDS(rsc, file = "../data/rsc_l80.rds")
+rsc <- readRDS("../data/rsc_l80.rds")
 
 rscp <- plotGridSearchPerplexity(rsc, sep = 1) +
     scale_x_discrete(breaks = seq(0, 30, 5),
@@ -62,7 +62,7 @@ print(rscp)
 print(g2)
 K <- 20
 
-pdf("../Figures/FigureS1.pdf", width = 10)
+pdf("../results/FigureS1.pdf", width = 10)
 print(rsmp)
 print(g1)
 print(rscp)
@@ -112,4 +112,4 @@ sce <- recodeClusterY(pbmc4kfK20L80,
 sce <- recodeClusterZ(sce,
     c(1, 7, 5, 6, 3, 4, 2, 8, 15, 17, 16, 19, 20, 18, 11, 13, 12, 9, 10, 14),
     seq(20))
-saveRDS(sce, file = "../Data/sce.rds")
+saveRDS(sce, file = "../data/sce.rds")

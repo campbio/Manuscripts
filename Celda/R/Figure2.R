@@ -2,7 +2,7 @@
 library(celda)
 library(ggplot2)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 g3.1 <- plotDimReduceCluster(sce, reducedDimName = "celda_UMAP",
     labelClusters = FALSE, xlab = "UMAP_1", ylab = "UMAP_2") +
@@ -55,7 +55,7 @@ g4.2 <- g4.1 + theme(strip.text = element_text(size = 18),
 print(g4.2)
 
 
-pdf("../Figures/Figure2.pdf", width = 10)
+pdf("../results/Figure2.pdf", width = 10)
 print(g3.2)
 print(g4.2)
 dev.off()

@@ -32,4 +32,11 @@ library(uwot)
 library(scran)
 library(scuttle)
 library(scater)
+library(circlize)
+library(SingleCellExperiment)
+library(patchwork)
+library(mclust)
+library(clue)
+library(BiocParallel)
+
 

@@ -3,7 +3,7 @@
 library(celda)
 library(ggplot2)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 markers <- c("CD3E", "CD3G",
     "CD8A", "CD8B",
@@ -37,6 +37,6 @@ for (i in seq(grids)) {
     glist[[i]] <- gtcell
 }
 
-pdf("../Figures/FigureS2.pdf")
+pdf("../results/FigureS2.pdf")
 print(glist)
 dev.off()
