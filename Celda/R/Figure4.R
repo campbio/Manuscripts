@@ -5,7 +5,7 @@ library(grid)
 library(gridExtra)
 library(ggplot2)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 m2 <- c(12, 44, 40, 65)
 m3 <- c(15, 45, 47, 75)
@@ -64,7 +64,7 @@ garr2 <- arrangeGrob(grobs = lapply(glist, "+", margin),
     #widths = c(2, 1.8),
     newpage = FALSE)
 
-pdf("../Figures/Figure4.pdf")
+pdf("../results/Figure4.pdf")
 grid.draw(garr2)
 dev.off()
 

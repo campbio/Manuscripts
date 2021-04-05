@@ -5,7 +5,7 @@ library(SingleCellExperiment)
 library(ggplot2)
 library(data.table)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 .themePublication <- function(base_size = 12,
     base_family = "sans") {
@@ -168,7 +168,7 @@ g <- ggplot() +
         axis.title = element_text(size = 16),
         axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
 
-pdf("../Figures/FigureS3.pdf", width = 10)
+pdf("../results/FigureS3.pdf", width = 10)
 print(g)
 dev.off()
 

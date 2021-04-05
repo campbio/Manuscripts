@@ -37,4 +37,4 @@ pbmc4kf <- pbmc4kdec[rowData(pbmc4kdec)$ENSEMBL_ID %in% vf1, ]
 rownames(pbmc4kf) <- rowData(pbmc4kf)$Symbol_TENx
 
 altExp(pbmc4kdec, "featureSubset") <- pbmc4kf
-saveRDS(pbmc4kdec, file = "../Data/pbmc4kdec.rds")
+saveRDS(pbmc4kdec, file = "../data/pbmc4kdec.rds")

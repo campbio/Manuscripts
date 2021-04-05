@@ -5,7 +5,7 @@ library(Seurat)
 library(scran)
 library(scater)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 
 K <- 20
 L <- 80
@@ -189,7 +189,7 @@ g7 <- plotUMAP(ae, colour_by = "Celda_cell_label",
         panel.spacing = unit(0, "lines"),
         panel.background = ggplot2::element_blank())
 
-pdf("../Figures/FigureS4.pdf")
+pdf("../results/FigureS4.pdf")
 print(g1)
 #print(g2)
 print(g3)

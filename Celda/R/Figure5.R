@@ -12,7 +12,7 @@ library(gridExtra)
 library(cowplot)
 library(gtable)
 
-sce <- readRDS("../Data/sce.rds")
+sce <- readRDS("../data/sce.rds")
 L <- 80
 
 seuratobj <- CreateSeuratObject(counts = decontXcounts(sce),
@@ -443,6 +443,6 @@ figure5 <- arrangeGrob(grobs = list(pcgrobpad, moduleplots),
     heights = c(1.5, 2),
     newpage = FALSE)
 
-pdf("../Figures/Figure5.pdf", width = 20, height = 20 * 4 / 3)
+pdf("../results/Figure5.pdf", width = 20, height = 20 * 4 / 3)
 grid.draw(figure5)
 dev.off()
