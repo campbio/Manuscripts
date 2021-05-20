@@ -1,0 +1,107 @@
+---
+title: "Comprehensive generation, visualization, and reporting of quality control metrics for single-cell RNA sequencing data"
+date: "5/20/2021"
+output: 
+ html_document:
+     code_folding: hide
+---
+
+The following code was used to generate the figures in "Comprehensive generation, visualization, and reporting of quality control metrics for single-cell RNA sequencing data".
+
+## Set file path
+
+```{r}
+sctk_qc_dir <- commandArgs(trailingOnly=T)[1]
+sctk_qc_output_dir <- commandArgs(trailingOnly=T)[2]
+```
+
+## Load library
+
+```{r}
+suppressPackageStartupMessages ({ 
+library("singleCellTK")
+library(SingleCellExperiment)
+library(SummarizedExperiment)
+library("ggplot2") })
+```
+
+## Load SingleCellExperiment object
+
+QC metrics generated from the SCTK-QC pipeline will be stored in the `colData` of the SingleCellExperiment object.
+
+### 10X PBMC
+
+```{r}
+g27_1k_v2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g27_pbmc1k_v2/R/g27_pbmc1k_v2_Cells.rds"))
+g27_1k_v3 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g27_pbmc1k_v3/R/g27_pbmc1k_v3_Cells.rds"))
+g34_1k_v2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g34_pbmc1k_v2/R/g34_pbmc1k_v2_Cells.rds"))
+g34_1k_v3 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g34_pbmc1k_v3/R/g34_pbmc1k_v3_Cells.rds"))
+```
+
+### SMART-Seq2
+
+```{r}
+smartSeq1 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/HCA_SCP424_PBMC1/R/HCA_SCP424_PBMC1_Cells.rds"))
+smartSeq2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/HCA_SCP424_PBMC2/R/HCA_SCP424_PBMC2_Cells.rds"))
+```
+
+## Figure generation - Figure 4
+
+### 10X, PBMC
+
+```{r, fig.height=6, fig.width = 12, warning=FALSE}
+#Will give warning due to some genes not existing in V3 compared to V2
+combinedAll10X <- combineSCE(sceList = list(g27_1k_v2, g27_1k_v3, g34_1k_v2, g34_1k_v3),
+                             by.r = c("feature_ID","feature_type"),
+                             by.c = colnames(colData(g27_1k_v2)), combined = TRUE)
+
+prc <- plotRunPerCellQCResults(combinedAll10X, combinePlot = "none", sample = combinedAll10X$sample)
+
+prc$Violin$Sum
+prc$Violin$Detected
+
+decontRes <- plotDecontXResults(combinedAll10X, combinePlot = "sample", sample = combinedAll10X$sample, reducedDimName = "decontX_UMAP")
+decontRes$Violin$Score
+```
+
+### SMART-Seq2
+
+```{r, fig.height=5.5, fig.width = 5.5}
+combinedAllSmartSeq <- combineSCE(sceList = list(smartSeq1, smartSeq2), 
+                                  by.r = NULL, by.c = colnames(colData(smartSeq1)), 
+                                  combined = TRUE)
+
+prc <- plotRunPerCellQCResults(combinedAllSmartSeq, combinePlot = "none", sample = combinedAllSmartSeq$sample)
+
+prc$Violin$Sum
+prc$Violin$Detected
+
+decontRes <- plotDecontXResults(combinedAllSmartSeq, combinePlot = "sample", sample = combinedAllSmartSeq$sample, reducedDimName = "decontX_UMAP")
+decontRes$Violin$Score
+```
+
+## Statstics tables for QC metrics - Table 3
+
+### Gencode version27, V2 Chemistry
+
+```{r}
+sampleSummaryStats(g27_1k_v2, simple = FALSE)
+```
+
+### Gencode version27, V3 Chemistry
+
+```{r}
+sampleSummaryStats(g27_1k_v3, simple = FALSE)
+```
+
+### Gencode version34, V2 Chemistry
+
+```{r}
+sampleSummaryStats(g34_1k_v2, simple = FALSE)
+```
+
+### Gencode version34, V3 Chemistry
+
+```{r}
+sampleSummaryStats(g34_1k_v3, simple = FALSE)
+```
