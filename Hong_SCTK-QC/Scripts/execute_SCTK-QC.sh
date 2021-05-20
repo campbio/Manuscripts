@@ -2,9 +2,6 @@
 input="/Path/to/the/top/directory/Hong_SCTK-QC"
 output="/Path/to/the/chosen/output/folder/"
 
-input="/restricted/projectnb/camplab/home/ykoga07/Git/Manuscripts/Hong_SCTK-QC/"
-output="/restricted/projectnb/camplab/home/ykoga07/Git/Manuscripts/Hong_SCTK-QC/Results"
-
 # Install SCTK-QC
 Rscript ${input}/Scripts/SCTK_install.R
 
