@@ -11,10 +11,10 @@ The SCTK-QC pipeline within the [singleCellTK](https://github.com/compbiomed/sin
 ## How to regenerate the results
 
 To regenerate the results, please follow these steps:
-1. Set the file path of this repository as the `<input>` in the `<execute_SCTK-QC.sh>` script.
-2. Set the desired file path for the output of the pipeline as the `<output>` in the `<execute_SCTK-QC.sh>` script.
-3. Execute the `<execute_SCTK-QC.sh>` script with the following command in your terminal:
+1. Set the file path of this repository as the `input` in the `execute_SCTK-QC.sh` script.
+2. Set the desired file path for the output of the pipeline as the `output` in the `execute_SCTK-QC.sh` script.
+3. Execute the `execute_SCTK-QC.sh` script with the following command in your terminal:
 
- `<bash execute_SCTK-QC.sh>`
+ `bash execute_SCTK-QC.sh`
 
-The outputs of the pipeline will be stored in the specified `<output>` directory.
+The outputs of the pipeline will be stored in the specified `output` directory.
