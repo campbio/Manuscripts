@@ -1,0 +1,200 @@
+---
+title: "paper_visualizations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Installation
+Include instructions for installing *specific version* of musicatk
+
+If you are attempting to reproduce this analysis, you can 1) install/load `renv`, 2) copy/paste the `renv.lock` file into your current working directory and 3) run the `renv::restore()` command to automatically install all of the packages with the same version. 
+
+```{r example_restore, eval = FALSE}
+# Make sure the 'renv.lock' file is in your current working directory.
+install.packages("renv")
+library(renv)
+renv::restore()
+```
+
+# Load required libraries
+
+```{r library, warning=FALSE, message=FALSE}
+library(musicatk)
+library("TCGAbiolinks")
+library("withr")
+```
+
+# Download mutation calls for TCGA
+```{r download, cache=TRUE, results=FALSE, message=FALSE}
+tcga_datasets <- c("TCGA-LAML", "TCGA-ACC", "TCGA-BLCA", "TCGA-LGG", "TCGA-BRCA", "TCGA-CESC", "TCGA-CHOL", "TCGA-COAD", "TCGA-ESCA", "TCGA-GBM", "TCGA-HNSC", "TCGA-KICH", "TCGA-KIRC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-LUAD", "TCGA-LUSC", "TCGA-DLBC", "TCGA-MESO", "TCGA-OV", "TCGA-PAAD", "TCGA-PCPG", "TCGA-PRAD", "TCGA-READ", "TCGA-SARC", "TCGA-SKCM", "TCGA-STAD", "TCGA-TGCT", "TCGA-THYM", "TCGA-THCA", "TCGA-UCS", "TCGA-UCEC", "TCGA-UVM")
+types <- substring(tcga_datasets, 6)
+
+dataset.list <- list()
+annot <- list()
+for(i in seq_along(tcga_datasets)) {
+  query <- GDCquery(project = tcga_datasets[i], 
+                  data.category = "Simple Nucleotide Variation", 
+                  data.type = "Masked Somatic Mutation", 
+                  workflow.type = "MuTect2 Variant Aggregation and Masking",
+                  experimental.strategy = "WXS",
+                  data.format = "maf")
+  GDCdownload(query)
+  data <- GDCprepare(query)
+  dataset.list[[types[i]]] <- data.frame(extract_variants_from_matrix(data), tumor_type=types[i], stringsAsFactors = FALSE)
+}
+```
+
+# Create subplots for Figure 1
+## Select a subset of tumor types 
+```{r fig1_data}
+select_tumor_types <- c("COAD", "LUAD", "SKCM", "UCEC")
+dataset.select <- do.call(rbind, dataset.list[select_tumor_types])
+annot.select <- unique(dataset.select[,c("sample", "tumor_type")])
+```
+
+## Create musica object
+```{r fig1_musica}
+g <- select_genome("38")
+musica <- create_musica(dataset.select, g)
+matched_annot <- annot.select[match(samp_annot(musica)$Samples, annot.select[,1]), 2]
+samp_annot(musica, "Tumor_Types") <- matched_annot
+build_standard_table(musica, g, "SBS96")
+```
+
+## Discover signatures
+```{r}
+res = discover_signatures(musica = musica, table_name = "SBS96", 
+                          num_signatures = 4, algorithm = "lda", 
+                          seed = 12345, nstart = 1)
+
+```
+
+## Plot exposures and signatures
+```{r fig1_exposures}
+# Plot exposures
+plot_exposures(res, proportional = FALSE, sort_samples = "total", 
+               num_samples = 150)
+plot_exposures(res, proportional = TRUE, sort_samples = "Signature3")
+plot_exposures(res, proportional = TRUE, num_samples = 8, sort_samples = "name")
+
+# Plot signatures
+plot_signatures(res)
+
+# Plot exposures by signature
+plot_exposures(result = res, proportional = TRUE, sort_samples = "total", 
+               plot_type = "box", group_by = "signature", 
+               annotation = "Tumor_Types", color_by = "annotation")
+
+# Plot exposures by tumor type
+plot_exposures(result = res, proportional = TRUE, sort_samples = "Signature4", 
+               plot_type = "bar", group_by = "annotation", 
+               annotation = "Tumor_Types", color_by = "signature")
+```
+
+## Plot UMAP
+```{r fig1_umap}
+with_seed(1, create_umap(res))
+plot_umap(result = res, color_by = "annotation", annotation = "Tumor_Types")
+plot_umap(res, "signatures")
+```
+
+## Create heatmap
+```{r fig1_heatmap}
+plot_heatmap(res_annot = res, proportional = TRUE, scale = TRUE, 
+             annotation = "Tumor_Types")
+```
+
+## Compare to COSMIC v2 Signatures
+```{r fig1_cosmic}
+compare_cosmic_v2(res, threshold = 0.88)
+```
+
+## Perform clustering 
+```{r fig1_cluster}
+clust <- cluster_exposure(result = res, nclust = 4, iter.max = 100, tol = 1e-14)
+plot_umap(result = res, color_by = "cluster", annotation = "Tumor_Types", 
+          clust = clust)
+```
+
+```{r fig1_diff_analysis, warning=FALSE}
+glm_stats <- exposure_differential_analysis(musica_result = res, 
+                                            annotation = "Tumor_Types", 
+                                            method = "glm")
+plot_differential_analysis(glm_stats, "glm", 4)
+```
+
+# TCGA PanCancer Analysis for Figure 2
+
+
+## Create musica object with all tumor types
+
+```{r fig2_create_musica, cache=FALSE}
+dataset <- do.call(rbind, dataset.list)
+annot <- unique(dataset[,c("sample", "tumor_type")])
+g <- select_genome("38")
+tcga <- create_musica(dataset, g)
+matched_annot <- annot[match(samp_annot(tcga)$Samples, annot[,1]), 2]
+samp_annot(tcga, "Tumor_Types") <- matched_annot
+```
+
+## Analyze SBS profiles
+```{r, fig2_sbs, cache=FALSE, results=FALSE, message=FALSE,}
+build_standard_table(tcga, g, "SBS96")
+tcga_sbs_subset <- subset_musica_by_counts(tcga, "SBS96", 5)
+tcga_v3_sbs <- with_seed(1, auto_predict_grid(musica = tcga_sbs_subset, 
+              table_name = "SBS96", signature_res = cosmic_v3_sbs_sigs_exome, 
+              algorithm = "lda", sample_annotation = "Tumor_Types"))
+with_seed(1, create_umap(tcga_v3_sbs))
+```
+
+```{r, fig2_sbs_umap, fig.height=5, fig.align="center", warning=FALSE}
+plot_umap(result = tcga_v3_sbs, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+```
+
+```{r, fig2_sbs_umap_sigs, fig.height=20, fig.width=25, fig.align="center"}
+plot_umap(tcga_v3_sbs, same_scale = FALSE)
+```
+
+## Analyze DBS profiles
+```{r, fig2_dbs, cache=FALSE, results=FALSE, warning=FALSE, message=FALSE}
+build_standard_table(tcga, g, "DBS78")
+tcga_dbs_subset <- subset_musica_by_counts(tcga, "DBS78", 5)
+tcga_v3_dbs <- with_seed(1, auto_predict_grid(musica = tcga_dbs_subset, 
+              table_name = "DBS78", signature_res = cosmic_v3_dbs_sigs, 
+              algorithm = "lda", sample_annotation = "Tumor_Types"))
+with_seed(1, create_umap(tcga_v3_dbs))
+```
+
+```{r, fig2_dbs_umap, warning=FALSE, fig.height=5, fig.align="center", warning=FALSE}
+plot_umap(result = tcga_v3_dbs, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+```
+
+```{r, fig2_dbs_umap_sigs, fig.height=20, fig.width=25, fig.align="center"}
+plot_umap(tcga_v3_dbs, same_scale = FALSE)
+```
+
+## Analyze INDEL profiles
+```{r, fig2_indel, cache=TRUE, results=FALSE, warning=FALSE, message=FALSE}
+build_standard_table(tcga, g, "IND83")
+tcga_ind_subset <- subset_musica_by_counts(musica = tcga, table_name = "IND83", num_counts = 5)
+tcga_v3_ind <- with_seed(1, auto_predict_grid(musica = tcga_ind_subset, 
+              table_name = "IND83", signature_res = cosmic_v3_indel_sigs, 
+              algorithm = "lda", sample_annotation = "Tumor_Types"))
+with_seed(1, create_umap(tcga_v3_ind))
+```
+
+```{r, fig2_indel_umap, fig.width=5, fig.height=5, fig.align="center", warning=FALSE}
+plot_umap(result = tcga_v3_ind, proportional = TRUE, color_by = "annotation", annotation = "Tumor_Types", add_annotation_labels = TRUE, annotation_text_box = TRUE, annotation_label_size = 6, legend = FALSE, strip_axes = TRUE)
+```
+
+```{r, fig2_indel_umap_sigs, fig.height=20, fig.width=25, fig.align="center"}
+plot_umap(tcga_v3_ind, same_scale = FALSE, legend = FALSE, strip_axes = TRUE)
+```
+
+# Session information
+```{r session_info}
+sessionInfo()
+```
