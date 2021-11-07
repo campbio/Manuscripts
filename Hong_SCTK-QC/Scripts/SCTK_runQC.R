@@ -548,7 +548,6 @@ for(i in seq_along(process)) {
         }
     }
 
-
     if (isTRUE(split)) {
         ### assign sample to every runBarcodeRanksMetaOutput metadata slot
         if (!is.null(mergedDropletSCE)) {
@@ -557,8 +556,8 @@ for(i in seq_along(process)) {
 
         if (!is.null(mergedFilteredSCE)) {
             for (name in names(metadata(mergedFilteredSCE))) {
-                metadata(mergedFilteredSCE)[[name]] <- list(metadata(mergedFilteredSCE)[[name]])
-                names(metadata(mergedFilteredSCE)[[name]]) <- samplename
+                #metadata(mergedFilteredSCE)[[name]] <- list(metadata(mergedFilteredSCE)[[name]])
+                #names(metadata(mergedFilteredSCE)[[name]]) <- samplename
             }
         }
 
@@ -684,9 +683,8 @@ if (!isTRUE(split)) {
                 if (name != "assayType") {
                     names(metadata(cellSCE)[[name]]) <- sample
                 }
-            }            
+            }
         }
-
         exportSCE(inSCE = dropletSCE, samplename = samplename, directory = directory, type = "Droplets", format=formats)
         exportSCE(inSCE = cellSCE, samplename = samplename, directory = directory, type = "Cells", format=formats)
 
@@ -738,7 +736,7 @@ if (!isTRUE(split)) {
                 if (name != "assayType") { ### not important and hard to force name. Skipped
                     names(metadata(cellSCE)[[name]]) <- sample
                 }
-            }            
+            }
         }
 
         exportSCE(inSCE = cellSCE, samplename = samplename, directory = directory, type = "Cells", format=formats)

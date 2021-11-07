@@ -32,17 +32,17 @@ QC metrics generated from the SCTK-QC pipeline will be stored in the `colData` o
 ### 10X PBMC
 
 ```{r}
-g27_1k_v2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g27_pbmc1k_v2/R/g27_pbmc1k_v2_Cells.rds"))
-g27_1k_v3 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g27_pbmc1k_v3/R/g27_pbmc1k_v3_Cells.rds"))
-g34_1k_v2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g34_pbmc1k_v2/R/g34_pbmc1k_v2_Cells.rds"))
-g34_1k_v3 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/g34_pbmc1k_v3/R/g34_pbmc1k_v3_Cells.rds"))
+g27_1k_v2 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/g27_pbmc1k_v2/R/g27_pbmc1k_v2_Cells.rds"))
+g27_1k_v3 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/g27_pbmc1k_v3/R/g27_pbmc1k_v3_Cells.rds"))
+g34_1k_v2 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/g34_pbmc1k_v2/R/g34_pbmc1k_v2_Cells.rds"))
+g34_1k_v3 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/g34_pbmc1k_v3/R/g34_pbmc1k_v3_Cells.rds"))
 ```
 
 ### SMART-Seq2
 
 ```{r}
-smartSeq1 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/HCA_SCP424_PBMC1/R/HCA_SCP424_PBMC1_Cells.rds"))
-smartSeq2 <- readRDS(file = paste0(sctk_qc_dir, "/Results/Pipeline_Output/HCA_SCP424_PBMC2/R/HCA_SCP424_PBMC2_Cells.rds"))
+smartSeq1 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/HCA_SCP424_PBMC1/R/HCA_SCP424_PBMC1_Cells.rds"))
+smartSeq2 <- readRDS(file = paste0(sctk_qc_output_dir, "/Pipeline_Output/HCA_SCP424_PBMC2/R/HCA_SCP424_PBMC2_Cells.rds"))
 ```
 
 ## Figure generation - Figure 4
