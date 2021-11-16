@@ -548,6 +548,7 @@ for(i in seq_along(process)) {
         }
     }
 
+
     if (isTRUE(split)) {
         ### assign sample to every runBarcodeRanksMetaOutput metadata slot
         if (!is.null(mergedDropletSCE)) {
@@ -556,8 +557,10 @@ for(i in seq_along(process)) {
 
         if (!is.null(mergedFilteredSCE)) {
             for (name in names(metadata(mergedFilteredSCE))) {
-                #metadata(mergedFilteredSCE)[[name]] <- list(metadata(mergedFilteredSCE)[[name]])
-                #names(metadata(mergedFilteredSCE)[[name]]) <- samplename
+                if (name != "assayType") {
+                    metadata(mergedFilteredSCE)[[name]] <- list(metadata(mergedFilteredSCE)[[name]])
+                    names(metadata(mergedFilteredSCE)[[name]]) <- samplename                    
+                }
             }
         }
 
@@ -673,8 +676,10 @@ if (!isTRUE(split)) {
             ### one sample. Treat it like split == TRUE
             cellSCE <- cellSCE_list[[1]]
             for (name in names(metadata(cellSCE))) {
-              metadata(cellSCE)[[name]] <- list(metadata(cellSCE)[[name]])
-              names(metadata(cellSCE)[[name]]) <- samplename
+              if (name != "assayType") {
+                metadata(mergedFilteredSCE)[[name]] <- list(metadata(mergedFilteredSCE)[[name]])
+                names(metadata(mergedFilteredSCE)[[name]]) <- samplename
+              }
             }
         } else {
             by.c <- Reduce(intersect, lapply(cellSCE_list, function(x) { colnames(colData(x))}))
@@ -683,8 +688,9 @@ if (!isTRUE(split)) {
                 if (name != "assayType") {
                     names(metadata(cellSCE)[[name]]) <- sample
                 }
-            }
+            }            
         }
+
         exportSCE(inSCE = dropletSCE, samplename = samplename, directory = directory, type = "Droplets", format=formats)
         exportSCE(inSCE = cellSCE, samplename = samplename, directory = directory, type = "Cells", format=formats)
 
@@ -725,8 +731,10 @@ if (!isTRUE(split)) {
             ### one sample. Treat it like split == TRUE
             cellSCE <- cellSCE_list[[1]]
             for (name in names(metadata(cellSCE))) {
-              metadata(cellSCE)[[name]] <- list(metadata(cellSCE)[[name]])
-              names(metadata(cellSCE)[[name]]) <- samplename
+              if (name != "assayType") {
+                  metadata(cellSCE)[[name]] <- list(metadata(cellSCE)[[name]])
+                  names(metadata(cellSCE)[[name]]) <- samplename                
+              }
             }
         } else {
             by.r <- NULL
@@ -736,7 +744,7 @@ if (!isTRUE(split)) {
                 if (name != "assayType") { ### not important and hard to force name. Skipped
                     names(metadata(cellSCE)[[name]]) <- sample
                 }
-            }
+            }            
         }
 
         exportSCE(inSCE = cellSCE, samplename = samplename, directory = directory, type = "Cells", format=formats)
