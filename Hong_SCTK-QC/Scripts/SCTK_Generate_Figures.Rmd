@@ -105,3 +105,16 @@ sampleSummaryStats(g34_1k_v2, simple = FALSE)
 ```{r}
 sampleSummaryStats(g34_1k_v3, simple = FALSE)
 ```
+
+### SMART-seq2, Replicate 1
+
+```{r}
+sampleSummaryStats(smartSeq1, simple = FALSE)
+```
+
+### SMART-seq2, Replicate 2
+
+```{r}
+sampleSummaryStats(smartSeq2, simple = FALSE)
+```
+
