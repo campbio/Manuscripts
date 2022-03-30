@@ -1,0 +1,149 @@
+---
+title: "Analysis of Tabula Muris with celda"
+author: "Joshua D. Campbell"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Install appropriate R packages 
+
+Uses the lock file from package "renv":
+
+```{r renv, eval=FALSE}
+install.packages(c("renv", "devtools", "BiocManager"))
+renv::activate()
+renv::restore(lockfile="renv.lock_no_celda")
+devtools::install_github("campbio/celda@v1.7.3")
+BiocManager::install(c("ExperimentHub", "TabulaMurisData"))
+```
+
+# Load appropriate libraries
+
+```{r tablus_import}
+library(SingleCellExperiment)
+library(ExperimentHub)
+library(TabulaMurisData)
+library(celda)
+library(Matrix)
+```
+
+# Load data using ExperimentHub
+
+```{r load_data}
+eh <- ExperimentHub()
+data <- eh[["EH1617"]]
+sce <- data[, data$tissue == "Lung" & is.na(data$subtissue)]
+counts(sce) <- as.matrix(counts(sce))
+```
+
+# Select the number of modules (L)
+
+```{r run_celda}
+sce <- selectFeatures(sce, minCell = 3, minCount = 3)
+moduleSplit <- recursiveSplitModule(sce, sampleLabel = sce$mouse_id, initialL = 10, maxL = 150)
+```
+```{r plot_rpc_selectL}
+plotGridSearchPerplexityDiff(moduleSplit, altExpName ="featureSubset", sep = 5)
+L <- 125
+```
+
+# Select the number of cell populations (K)
+
+```{r run_celda_cellsplit}
+temp <- subsetCeldaList(moduleSplit, list(L = L))
+sce <- recursiveSplitCell(sce, sampleLabel = sce$mouse_id, initialK = 3, maxK = 40, yInit = celdaModules(temp))
+```
+
+```{r plot_rpc_selectK}
+plotGridSearchPerplexityDiff(sce, altExpName = "featureSubset", sep = 5)
+sce <- subsetCeldaList(sce, list(L=125, K=35))
+```
+
+# Plot clusters and markers on UMAP
+
+```{r celda_umap_clusters}
+sce <- celdaUmap(sce)
+pdf("tabula_muris_umap_clusters.pdf", useDingbats=FALSE)
+plotDimReduceCluster(sce, reducedDimName = "celda_UMAP", size = 0.25, labelClusters = TRUE)
+dev.off()
+```
+
+
+```{r plot_markers}
+markers <- c("Sftpa1", "Scgb1a1", "Foxj1", "Cd79a", "Cd3e", "Nkg7", "Csf1r", "Marco", "S100a8", "Hba-a1",  "Col1a1", "Pecam1", "Mki67", "Fcer1a", "Acta2", "Dcn", "Cd8a")
+pdf("tabula_muris_umap_markers.pdf", useDingbats=FALSE)
+plotDimReduceFeature(sce, reducedDimName = "celda_UMAP", features = markers, size = 0.25)
+dev.off()
+```
+
+# Plot module probabilities on UMAP
+
+```{r plot_module_probs}
+pdf("tabula_muris_umap_modules.pdf", useDingbats=FALSE)
+for(i in seq(L)) {
+  print(plotDimReduceModule(sce, reducedDimName = "celda_UMAP", module = i, size = 0.25))
+}
+dev.off()
+```
+
+# Plot module heatmaps
+
+```{r plot_module_heatmaps}
+pdf("tabula_muris_module_heatmaps.pdf", useDingbats=FALSE)
+for(i in seq(L)) {
+  print(moduleHeatmap(sce, featureModule = i))
+}
+dev.off()
+```
+
+# Plot cell type labels on UMAP
+
+```{r celda_umap_clusters_labels}
+pdf("tabula_muris_umap_clusters_labeled.pdf", useDingbats=FALSE, width = 10, height = 6)
+labels <- c("1: RBC",
+            "2: Club",
+            "3: AT2",
+            "4: AT2",
+            "5: Cd14/Cd16/S100a8 Monocyte", 
+            "6: Myeloid", 
+            "7: Myeloid", 
+            "8: B-cell", 
+            "9: Cd8a T-cell", 
+            "10: Cd8a T-cell", 
+            "11: Cytotoxic T-cell", 
+            "12: NK-cell", 
+            "13: Myeloid",
+            "14: Dendritic",
+            "15: Myeloid",
+            "16: Proliferating T-cell",
+            "17: Pecam1 endothelial",
+            "18: Transitional cell",
+            "19 Proliferating alveolar macrophage",
+            "20 Alveolar macrophage",
+            "21 Alveolar macrophage",
+            "22 Cd14/Cd16 Myeloid",
+            "23 Cd14/Cd16 Myeloid",
+            "24 Cd14/Cd16 Myeloid",
+            "25 Cd14/Cd16 Myeloid",
+            "26 Cd14/Cd16 Myeloid",
+            "27 Ciliary",
+            "28 Cd14/S100a8 Monoctye",
+            "29 Pecam1 endothelial",
+            "30 Pecam1 endothelial",
+            "31 Col1a1 fibroblast" ,
+            "32 Col1a1 fibroblast",
+            "33 Acta2 smooth muscle",
+            "34 Col1a1 fibroblast",
+            "35 Col1a1 fibroblast")
+g <- plotDimReduceCluster(sce, reducedDimName = "celda_UMAP", size = 0.25)
+library(ggplot2)
+g <- g + scale_color_manual(labels = labels,
+    values = distinctColors(length(labels)))
+print(g)
+dev.off()
+```
+
+
+
