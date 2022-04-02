@@ -1,4 +1,4 @@
-# Figure S5: Heatmaps of first 9 PCs
+# Figure S10: Heatmaps of first 9 PCs
 
 library(celda)
 library(Seurat)

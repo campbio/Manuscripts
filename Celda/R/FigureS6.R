@@ -1,4 +1,4 @@
-# Figure S4: Seurat and scran clusterings
+# Figure S6: Seurat and scran clusterings
 
 library(celda)
 library(Seurat)
