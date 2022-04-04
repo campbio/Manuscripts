@@ -1,241 +1,174 @@
-# Figure S4: Seurat and scran clusterings
 
+library(Matrix)
+library(TENxPBMCData)
+library(SingleCellExperiment)
 library(celda)
+library(singleCellTK)
 library(Seurat)
-library(scran)
-library(scater)
+library(ggplot2)
+library(data.table)
 
-sce <- readRDS("../data/sce.rds")
+pbmc33k <- TENxPBMCData("pbmc33k")
 
-K <- 20
+colnames(pbmc33k) <- colData(pbmc33k)$Barcode
+counts(pbmc33k) <- as(counts(pbmc33k), "dgCMatrix")
+
+pbmc33k <- decontX(pbmc33k)
+
+decUMAP <- reducedDim(pbmc33k, "decontX_UMAP")
+altExp(pbmc33k, "allFeatures") <- pbmc33k
+
+pbmc33k <- seuratFindHVG(
+    pbmc33k,
+    useAssay = "decontXcounts",
+    hvgMethod = "vst")
+
+o <- head(order(
+    rowData(pbmc33k)$seurat_variableFeatures_vst_varianceStandardized,
+    decreasing = TRUE),
+    n = 2000)
+vst2000 <- pbmc33k[o, ]
+altExp(vst2000, "allFeatures") <- NULL
+altExp(pbmc33k, "VST2000") <- vst2000
+
+pbmc33k <- recursiveSplitModule(pbmc33k,
+    useAssay = "decontXcounts",
+    altExpName = "VST2000",
+    initialL = 3,
+    maxL = 150)
+
+sce1 <- pbmc33k
+
+g1 <- plotGridSearchPerplexity(sce1, altExpName = "VST2000", sep = 10)
+g1 <- g1 + scale_x_discrete(breaks = seq(0, 150, 10),
+    limits = factor(seq(0, 152, 1))) +
+    theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 16))
+
+g2 <- plotRPC(sce1, altExpName = "VST2000", sep = 10, n = 20)
+g2 <- g2 + scale_x_discrete(breaks = seq(0, 150, 10),
+    limits = factor(seq(0, 152, 1))) +
+    ylab("RPC of L") +
+    theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 16))
+
 L <- 80
 
-protci <- which(celdaClusters(sce) == 15)
-plasmaci <- which(celdaClusters(sce) == 1)
+pbmc33kL80 <- subsetCeldaList(pbmc33k, list(L = L), altExpName = "VST2000")
 
-# Seurat
-pbmc4kseurat <- CreateSeuratObject(counts = decontXcounts(sce),
-    project = "pbmc4kdec", min.cells = 3, min.features = 200)
-dim(pbmc4kseurat)
+# ~ 15 minutes
+pbmc33k <- recursiveSplitCell(pbmc33kL80,
+    useAssay = "decontXcounts",
+    altExpName = "VST2000",
+    initialK = 3,
+    maxK = 30,
+    yInit = celdaModules(pbmc33kL80, altExpName = "VST2000"))
 
-pbmc4kseurat <- NormalizeData(pbmc4kseurat)
-pbmc4kseurat <- FindVariableFeatures(pbmc4kseurat)
-pbmc4kseurat <- ScaleData(pbmc4kseurat)
-pbmc4kseurat <- RunPCA(pbmc4kseurat)
-#ElbowPlot(pbmc4kseurat, ndims = 50)
-pbmc4kseurat <- FindNeighbors(pbmc4kseurat, dims = seq(22))
-pbmc4kseurat <- FindClusters(pbmc4kseurat)
-pbmc4kseurat <- RunUMAP(pbmc4kseurat, dims = seq(22),
-    n.neighbors = 10, min.dist = 0.5)
+sce2 <- pbmc33k
 
+g3 <- plotGridSearchPerplexity(sce2, altExpName = "VST2000", sep = 5)
+g3 <- g3 + scale_x_discrete(breaks = seq(0, 30, 5),
+    limits = factor(seq(0, 31, 1))) +
+    theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        legend.position = "none")
 
-g1 <- DimPlot(pbmc4kseurat, reduction = "umap", label = TRUE, pt.size = 0.7) +
-    theme(legend.position = "none") +
-    xlab(NULL) +
-    ylab(NULL) +
-    theme(axis.line = element_blank(),
-        # axis.line.x.top = element_line(color = "grey90"),
-        # axis.line.y.right = element_line(color = "grey90"),
-        panel.border = element_rect(color = "grey90", fill = NA),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #strip.text = element_blank(),
-        legend.position = "none",
-        strip.background = ggplot2::element_blank(),
-        panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        panel.spacing = unit(0, "lines"),
-        panel.background = ggplot2::element_blank())
+g4 <- plotRPC(sce2, altExpName = "VST2000", sep = 5, n = 3)
+g4 <- g4 + scale_x_discrete(breaks = seq(0, 30, 5),
+    limits = factor(seq(0, 31, 1))) +
+    ylab("RPC of K") +
+    theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 16),
+        legend.position = "none")
 
-# Plasma cell & Proliferating T cells
-g2 <- DimPlot(pbmc4kseurat, reduction = "umap", label = FALSE, pt.size = 0.7,
-    cells.highlight = list("Plasma cell" = plasmaci,
-        "Proliferating T-cells" = protci), cols.highlight = c("#DE2D26",
-        "darkblue"))
+K <- 20
+pbmc33k <- subsetCeldaList(pbmc33k, list(K = K), altExpName = "VST2000")
 
-g3 <- DimPlot(pbmc4kseurat, reduction = "umap", label = FALSE, pt.size = 0.7,
-    cells.highlight = list("Plasma cell" = plasmaci,
-        "Proliferating T-cells" = protci), cols.highlight = c("#DE2D26",
-            "darkblue")) +
-    theme(legend.position = "none") +
-    xlab(NULL) +
-    ylab(NULL) +
-    theme(axis.line = element_blank(),
-        # axis.line.x.top = element_line(color = "grey90"),
-        # axis.line.y.right = element_line(color = "grey90"),
-        panel.border = element_rect(color = "grey90", fill = NA),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #strip.text = element_blank(),
-        legend.position = "none",
-        strip.background = ggplot2::element_blank(),
-        panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        panel.spacing = unit(0, "lines"),
-        panel.background = ggplot2::element_blank())
+assay(pbmc33k, "normcounts") <- NormalizeData(decontXcounts(pbmc33k),
+    normalization.method = "RC",
+    scale.factor = 1)
 
-# markers <- c("CD3D", "CD3E", "CD3G", "CD8A", "CD8B", "GZMA", "GZMK", #CD8+ T
-#     "MS4A1", "CD19", #B
-#     "CD4", "CCR7", "CD27", "SELL", # Naive CD4+ T
-#     "IL7R", "S100A4", # Memory CD4+ T
-#     "NKG7", "GZMB", "GNLY", # NK
-#     "FCGR3A", # FCGR3A+ mono
-#     "CD14", "LYZ", "S100A9", # CD14+ mono
-#     "MKI67", "CENPF", "CENPM", # Activated T
-#     "FCER1A", "HLA-DQA1", "HLA-DPB1", "HLA-DRB1", "CST3", # DC
-#     "CLEC4C", "PLAC8", "IRF7", "IRF8", # pDC
-#     "PPBP", "ITGA2B", "CXCR4", # Mk
-#     "CD34", # CD34+
-#     "MT-CO1", "MT-CO2", "MT-CO3", "IGKC",
-#     "IGHG1", "IGHG2", "IGHG3", # pc
-#     "IGLC2", "IGLC3")
+pbmc33k <- celdaUmap(
+    pbmc33k,
+    useAssay = "decontXcounts",
+    altExpName = "VST2000")
 
-# len <- length(markers)
-# grids <- len / 9
-# if (len %% 9 != 0) {
-#     grids <- as.integer(grids + 1)
-# }
-# for (i in seq(grids)) {
-#     nums <- seq(((i - 1) * 9) + 1, min(i * 9, len))
-#     g <- FeaturePlot(pbmc4kseurat, features = markers[nums],
-#         reduction = "umap", order = TRUE, pt.size = 0.1)
-#     print(g)
-# }
+#saveRDS(pbmc33k, file = "../Data/pbmc33k_umap.rds")
+
+selectedMarkers <- c("CD3D", # T cells
+    "CD4",
+    "CD8A",
+    "CD19", # B
+    "NKG7",
+    #"KLRD1",
+    "FCGR3A", # FCGR3A+ monocytes
+    "CLEC4C",
+    "CD14", # CD14+ monocytes
+    #"MKI67", # proliferating T
+    "IGJ",
+    #"IGLL5",
+    "FCER1A", # DC
+    "CD34",
+    "ITGA2B") # Mk
+
+g5 <- plotDimReduceFeature(x = pbmc33k,
+    features = selectedMarkers,
+    displayName = "Symbol_TENx",
+    reducedDimName = "celda_UMAP",
+    useAssay = "normcounts",
+    altExpName = "VST2000",
+    size = 0.1,
+    xlab = "UMAP_1",
+    ylab = "UMAP_2",
+    normalize = FALSE)
+g5 <- g5 + theme(strip.text = element_text(size = 18),
+    axis.title = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 18))
 
 
-markers2 <- c("MKI67", "IL2RA", "CENPM", "CENPF", "IGHG1", "IGHG3",
-    "IGLC2", "IGLC3")
-g4 <- FeaturePlot(pbmc4kseurat, features = markers2,
-    reduction = "umap", order = TRUE, pt.size = 0.1)
+labels <- c("1: CD14+ Mono",
+    "2: CD14+ Mono",
+    "3: CD14+ Mono",
+    "4: CD14+ Mono",
+    "5: Mk",
+    "6: FCGR3A+ Mono",
+    "7: FCGR3A+ Mono",
+    "8: pDC & CD34+",
+    "9: DC",
+    "10: B",
+    "11: B",
+    "12: Mk",
+    "13: NK",
+    "14: NK",
+    "15: NKT",
+    "16: CD8+ T",
+    "17: T",
+    "18: CD4+ T",
+    "19: Plasma cell",
+    "20: Plasma cell")
 
-
-# scran
-set.seed(12345)
-ae <- altExp(sce)
-assay(ae, "counts") <- NULL
-
-ae <- logNormCounts(ae, assay.type = "decontXcounts")
-ae <- runPCA(ae, ntop = 2000) # no scaling
-
-output <- getClusteredPCs(reducedDim(ae, "PCA"))
-npcs <- metadata(output)$chosen
-reducedDim(ae, "PCAsub") <- reducedDim(ae, "PCA")[, seq(npcs), drop=FALSE]
-# npcs # 30
-
-graph <- buildSNNGraph(ae, use.dimred = "PCAsub")
-cluster <- igraph::cluster_walktrap(graph)$membership
-
-colLabels(ae) <- factor(cluster)
-table(colLabels(ae))
-length(unique(colLabels(ae)))
-# 24
-
-ae <- runUMAP(ae, dimred = "PCAsub", n_neighbors = 5)
-
-g5 <- plotUMAP(ae, colour_by = "label", text_by = "label", point_alpha = 1,
-    point_size = 0.6) +
-    scale_color_manual(values = distinctColors(length(unique(colLabels(ae))))) +
-    theme(legend.position = "none") +
-    xlab(NULL) +
-    ylab(NULL) +
-    theme(axis.line = element_blank(),
-        # axis.line.x.top = element_line(color = "grey90"),
-        # axis.line.y.right = element_line(color = "grey90"),
-        panel.border = element_rect(color = "grey90", fill = NA),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #strip.text = element_blank(),
-        legend.position = "none",
-        strip.background = ggplot2::element_blank(),
-        panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        panel.spacing = unit(0, "lines"),
-        panel.background = ggplot2::element_blank())
-
-colData(ae)["Celda_cell_label"] <- c("Other")
-colData(ae)[protci, "Celda_cell_label"] <- c("Proliferating T-cells")
-colData(ae)[plasmaci, "Celda_cell_label"] <- c("Plasma cell")
-
-# colData(ae)["Celda_cell_label_size"] <- 1
-# colData(ae)[protci, "Celda_cell_label_size"] <- 2
-# colData(ae)[plasmaci, "Celda_cell_label_size"] <- 2
-
-ae <- ae[, order(colData(ae)$Celda_cell_label)]
-
-g6 <- plotUMAP(ae[, ], colour_by = "Celda_cell_label",
-    point_size = 0.6, point_alpha = 1) +
-    #scale_size_discrete(colData(ae)$Celda_cell_label_size, range = c(1, 2)) +
-    scale_color_manual(values = c("#bdbdbd", "darkblue", "#DE2D26"))
-
-
-g7 <- plotUMAP(ae, colour_by = "Celda_cell_label",
-    point_size = 0.6, point_alpha = 1) +
-    #scale_size_discrete(colData(ae)$Celda_cell_label_size, range = c(1, 2)) +
-    scale_color_manual(values = c("#bdbdbd", "darkblue", "#DE2D26")) +
-    theme(legend.position = "none") +
-    xlab(NULL) +
-    ylab(NULL) +
-    theme(axis.line = element_blank(),
-        # axis.line.x.top = element_line(color = "grey90"),
-        # axis.line.y.right = element_line(color = "grey90"),
-        panel.border = element_rect(color = "grey90", fill = NA),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #strip.text = element_blank(),
-        legend.position = "none",
-        strip.background = ggplot2::element_blank(),
-        panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        panel.spacing = unit(0, "lines"),
-        panel.background = ggplot2::element_blank())
+g6 <- plotDimReduceCluster(
+    pbmc33k,
+    reducedDimName = "celda_UMAP",
+    altExpName = "VST2000",
+    labelClusters = TRUE,
+    size = 0.1,
+    xlab = "UMAP_1",
+    ylab = "UMAP_2")
+g6 <- g6 + scale_color_manual(labels = labels,
+    values = distinctColors(length(labels))) +
+    theme(axis.title = element_text(size = 16, face = "bold"),
+        strip.text = element_text(size = 18),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 18)) +
+    guides(colour = guide_legend(override.aes = list(size = 4)))
 
 pdf("../results/FigureS4.pdf")
-print(g1)
-#print(g2)
-print(g3)
+print(g6)
 print(g5)
-#print(g6)
-print(g7)
+print(g1)
+print(g2)
+print(g3)
+print(g4)
 dev.off()
-
-
-# markers <- c("CD3D", "CD3E", "CD3G", "CD8A", "CD8B", "GZMA", "GZMK", #CD8+ T
-#     "MS4A1", "CD19", #B
-#     "CD4", "CCR7", "CD27", "SELL", # Naive CD4+ T
-#     "IL7R", "S100A4", # Memory CD4+ T
-#     "NKG7", "GZMB", "GNLY", # NK
-#     "FCGR3A", # FCGR3A+ mono
-#     "CD14", "LYZ", "S100A9", # CD14+ mono
-#     "MKI67", "CENPF", "CENPM", # Activated T
-#     "FCER1A", "HLA-DQA1", "HLA-DPB1", "HLA-DRB1", "CST3", # DC
-#     "CLEC4C", "PLAC8", "IRF7", "IRF8", # pDC
-#     "PPBP", "ITGA2B", "CXCR4", # Mk
-#     "CD34", # CD34+
-#     "MT-CO1", "MT-CO2", "MT-CO3", "IGKC",
-#     "IGHG1", "IGHG2", "IGHG3", # pc
-#     "IGLC2", "IGLC3")
-#
-#
-# len <- length(markers)
-# grids <- len / 9
-# if (len %% 9 != 0) {
-#     grids <- as.integer(grids + 1)
-# }
-#
-# altExp(sce) <- ae
-# for (i in seq(grids)) {
-#     nums <- seq(((i - 1) * 9) + 1, min(i * 9, len))
-#     g <- plotDimReduceFeature(sce,
-#         altExpName = "featureSubset",
-#         useAssay = "decontXcounts",
-#         reducedDimName = "UMAP",
-#         features = markers[nums],
-#         decreasing = FALSE,
-#         size = 0.1)
-#     print(g)
-# }
-
-
-
-
 
