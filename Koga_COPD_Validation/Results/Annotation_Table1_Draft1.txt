@@ -1,0 +1,21 @@
+	Bronchial Brushings (n = 158)	Nasal Brushings (n = 99)
+Sex		
+Female	28 (17.7%)	22 (22.2%)
+Male	130 (82.3%)	77 (77.8%)
+Age		
+Mean (SD)	63.5 (6.04)	62.7 (6.17)
+Median [Min, Max]	63.0 [50.0, 79.0]	63.0 [50.0, 79.0]
+Smoking Status		
+Former	101 (63.9%)	60 (60.6%)
+Current	57 (36.1%)	39 (39.4%)
+COPD		
+COPD (FEV1/FVC < 0.7)	109 (69%)	65 (65.7%)
+No COPD 	49 (31%)	34 (34.3%)
+Baseline FEV1		
+Mean (SD)	2.36 (0.724)	2.32 (0.673)
+Median [Min, Max]	2.37 [0.910, 4.48]	2.29 [1.14, 4.05]
+FEV1 Decline Rate (ΔFEV1, L/yr)		
+Mean (SD)	0.041 (0.11)	0.053 (0.13)
+Median [Min, Max]	0.039 [-0.35, 0.56]	0.043 [-0.35, 0.56]
+Follow-up time (yrs)Mean (SD)		
+Sex	4.1 (1.9)	4.2 (1.9)
