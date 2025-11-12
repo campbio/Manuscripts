@@ -1,0 +1,1099 @@
+---
+title: "20230505_SampleMerging_Filtering_1stPassClustering_Seurat_RNAOnly"
+author: "Yusuke Koga"
+date: "2023-05-05"
+output:
+ html_document:
+     toc: true
+     toc_float: true
+     number_sections: true
+     theme: cosmo
+     code_folding: hide
+---
+
+
+Batch correction: Not applied
+
+Neutrophils (Cells with low RNA library size and high CD16+ ADT): included
+
+```{r}
+suppressPackageStartupMessages({
+    library(Seurat)
+    library(dplyr)
+    library(ggplot2)
+    library(DropletUtils)
+    library(singleCellTK)
+    library(celda)
+    library(grDevices)
+    library(pheatmap)
+    library(reshape2)
+    library(knitr)
+    library(harmony)
+    library(kableExtra)
+})
+
+
+# Define tab levels
+tab3 <- "### %s {-}
+"
+tab4 <- "#### %s {-}
+"
+tab5 <- "##### %s {-}
+"
+space <- "
+
+"
+
+
+```
+
+```{r}
+set.seed(12345)
+```
+
+```{r}
+batchcor <- "no_harmony"
+neutrophil <- "with_emptydrops"
+```
+
+# Step 1. Load all samples, merging all samples as single object
+
+```{r, eval = FALSE}
+postdeconDataDir = "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/"
+allRdsObj <- list.files(path = postdeconDataDir , pattern = "*x.rds")
+
+for(x in 1:length(allRdsObj)){
+   obj <- allRdsObj[x]
+   if(x > 1){
+       tempObj <- readRDS(paste0(postdeconDataDir, obj))
+       allSampleObj <- merge(allSampleObj, tempObj)
+   }else{
+       allSampleObj <- readRDS(paste0(postdeconDataDir, obj))
+   }
+}
+
+# citeCounts <- GetAssayData(allSampleObj, assay = "CITE")
+# citeCounts <- citeCounts[-grep("ADT",rownames(GetAssayData(allSampleObj, assay = "CITE"))),]
+# allSampleObj[["CITE"]] <- CreateAssayObject(citeCounts)
+
+saveRDS(allSampleObj, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/NeutrophilIdentification/20230220_no_combatseq_with_emptydrops_allSampleObj_PostDoubletDetection.rds")
+```
+
+
+
+# Step 2. Clustering - RNA only
+
+Due to the CITE-seq expression data being highly variable by sample, we have decided to not integrate the CITE-seq expression (via WNN), and instead cluster the data only using RNA-seq expression.
+
+```{r, eval = FALSE}
+allSampleObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/NeutrophilIdentification/20230220_no_combatseq_with_emptydrops_allSampleObj_PostDoubletDetection.rds"))
+```
+
+```{r, eval = FALSE}
+DefaultAssay(allSampleObj) = "RNA"
+
+allSampleObj[["percent.mt"]] <-  PercentageFeatureSet(allSampleObj, pattern = "^MT-")
+allSampleObj[["percent.xist"]] <-  PercentageFeatureSet(allSampleObj, pattern = "XIST")
+allSampleObj[["percent.malat"]] <-  PercentageFeatureSet(allSampleObj, pattern = "MALAT")
+
+allSampleObj[["CITE_Total"]] <- colSums(GetAssayData(allSampleObj, assay = "CITE"))
+allSampleObj[["CITE_Features"]] <- colSums(GetAssayData(allSampleObj, assay = "CITE") > 0)
+
+#Subset by demultiplex result
+## Setting all samples with out HTO classifications (i.e. tumor samples that were not hashed) as singlet
+allSampleObj$HTO_classification.global[which(is.na(allSampleObj$HTO_classification.global))] <- "Singlet"
+```
+
+```{r}
+#QC Figure:
+
+ggtable <- as.data.frame(as.matrix(table(allSampleObj$Batch)))
+
+htoDemuxTable <- as.data.frame(as.matrix(table(allSampleObj$Batch,allSampleObj$HTO_classification.global == "Singlet"))[,"TRUE"])
+ggtable$PostDemux <- htoDemuxTable[,1]
+
+passDemux <- colnames(allSampleObj)[which(allSampleObj$HTO_classification.global == "Singlet")]
+passCITE <- colnames(allSampleObj)[which(allSampleObj$CITE_Features > 50)]
+passMT <- colnames(allSampleObj)[which(allSampleObj$percent.mt < 15)]
+passDecont <- colnames(allSampleObj)[which(allSampleObj$DecontXContamination < 0.9)]
+
+passAll <- intersect(intersect(intersect(passDemux, passCITE),passMT),passDecont)
+
+passAllPatient <- gsub("_TL_.*","_TL", passAll)
+passAllPatient <- gsub("_T_.*","_T", passAllPatient)
+passAllPatient <- gsub("_L.*","_L", passAllPatient)
+
+passQCTable <- as.data.frame(as.matrix(table(passAllPatient)))
+colnames(passQCTable) <- "QC"
+rownames(passQCTable) <- gsub("Patient","BUMC_LR_0",rownames(passQCTable))
+
+
+#Filter to only patients 10-20
+passQCTable <- passQCTable[-1,]
+ggtable <- ggtable[8:25,]
+ggtable <- cbind(ggtable, passQCTable)
+ggtable$Sample <- c("Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor", 
+                    "Patient15, LN", "Patient15, Tumor", 
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor", 
+                    "Patient18, LN", "Patient18, Tumor+Normal", 
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+colnames(ggtable)[1] <- "Non-droplets, Generated via CellRanger"
+colnames(ggtable)[2] <- "Post-QC"
+colnames(ggtable)[3] <- "Recovered from HTODemux, PeanutX"
+
+ggtableM <- melt(ggtable, id.vars = "Sample")
+colnames(ggtableM) <- c("Sample", "Step", "Cells")
+
+ggtableM$Sample <- factor(ggtableM$Sample, levels = unique(ggtableM$Sample))
+```
+
+
+```{r, fig.width = 11, fig.height = 5}
+p <- ggplot(data = ggtableM, aes(x = Sample, y = Cells, fill = Step)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ scale_fill_manual(values=c("red","green4", "darkblue"))
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/temp.pdf", width = 11, height = 5)
+p
+dev.off()
+```
+
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "Nondecon_CITE")
+adtCounts <- adtCounts[-c(1:10),]
+allSampleObj[["NondeconCITE_Total"]] <- colSums(adtCounts)
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$NondeconCITE_Total)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+metricTotalTable <- metricTotalTable[which(metricTotalTable$average > 10),]
+
+colnames(metricTotalTable) <- c("Sample", "Average_CITE_Expression")
+metricTotalTable$Sample <- c("Patient3, Tumor","Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor", 
+                    "Patient15, LN", "Patient15, Tumor", 
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor", 
+                    "Patient18, LN", "Patient18, Tumor+Normal", 
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_CITE_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ ylab("Average CITE-seq Counts") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_CITEExprs.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "Nondecon_CITE")
+adtCounts <- adtCounts[-c(1:10),]
+allSampleObj[["NondeconCITE_Total"]] <- colSums(adtCounts > 0)
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$NondeconCITE_Total)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+metricTotalTable <- metricTotalTable[which(metricTotalTable$average > 10),]
+
+colnames(metricTotalTable) <- c("Sample", "Average_CITE_Expression")
+metricTotalTable$Sample <- c("Patient3, Tumor","Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor", 
+                    "Patient15, LN", "Patient15, Tumor", 
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor", 
+                    "Patient18, LN", "Patient18, Tumor+Normal", 
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_CITE_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ ylab("Average CITE-seq Features Detected") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_CITEFeatures.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "CITE")
+allSampleObj[["CITE_Total"]] <- colSums(adtCounts > 2)
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$CITE_Total)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+metricTotalTable <- metricTotalTable[which(metricTotalTable$average > 10),]
+
+colnames(metricTotalTable) <- c("Sample", "Average_CITE_Expression")
+metricTotalTable$Sample <- c("Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor", 
+                    "Patient15, LN", "Patient15, Tumor", 
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor", 
+                    "Patient18, LN", "Patient18, Tumor+Normal", 
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_CITE_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ ylab("Average CITE-seq Features Detected, Post Decontamination") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_CITEFeatures_PostDecon_Thres2.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "CITE")
+allSampleObj[["CITE_Total"]] <- colSums(adtCounts)
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$CITE_Total)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+metricTotalTable <- metricTotalTable[which(metricTotalTable$average > 10),]
+
+colnames(metricTotalTable) <- c("Sample", "Average_CITE_Expression")
+metricTotalTable$Sample <- c("Patient3, Tumor","Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor", 
+                    "Patient15, LN", "Patient15, Tumor", 
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor", 
+                    "Patient18, LN", "Patient18, Tumor+Normal", 
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_CITE_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ ylab("Average CITE-seq Counts, Post Decontamination") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_CITEExprsPostDecon.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "Nondecon_RNA")
+# adtCounts <- adtCounts[-c(1:10),]
+allSampleObj[["NondeconCITE_Total"]] <- colSums(adtCounts)
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$NondeconCITE_Total)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+metricTotalTable <- metricTotalTable[which(metricTotalTable$average > 10),]
+
+colnames(metricTotalTable) <- c("Sample", "Average_RNA_Expression")
+metricTotalTable$Sample <- c("Patient3, Tumor","Patient5, Tumor+LN",
+                    "Patient6, LN", "Patient6, Tumor",
+                    "Patient8, LN","Patient8, Tumor", 
+                    "Patient9, Tumor+LN",
+                    "Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor",
+                    "Patient15, LN", "Patient15, Tumor",
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor",
+                    "Patient18, LN", "Patient18, Tumor+Normal",
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_RNA_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))  + ylab("Average UMI Counts") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_RNAExprs.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+
+
+```{r, fig.width = 11, fig.height = 7}
+adtCounts <- GetAssayData(allSampleObj, assay = "Nondecon_RNA")
+# adtCounts <- adtCounts[-c(1:10),]
+metricTotalTable <- data.frame(Batch = allSampleObj$Batch, CITETotal = allSampleObj$mito_percent)
+metricTotalTable <- metricTotalTable %>% group_by(Batch) %>% summarise(average = mean(CITETotal))
+
+colnames(metricTotalTable) <- c("Sample", "Average_RNA_Expression")
+metricTotalTable$Sample <- c("Patient3, Tumor","Patient5, Tumor+LN",
+                    "Patient6, LN", "Patient6, Tumor",
+                    "Patient8, LN","Patient8, Tumor", 
+                    "Patient9, Tumor+LN",
+                    "Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor",
+                    "Patient15, LN", "Patient15, Tumor",
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor",
+                    "Patient18, LN", "Patient18, Tumor+Normal",
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+
+metricTotalTable$Sample <- factor(metricTotalTable$Sample, levels = unique(metricTotalTable$Sample))
+
+p <- ggplot(data = metricTotalTable, aes(x = Sample, y = Average_RNA_Expression, fill = Sample)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))  + ylab("Average Mitochondrial Gene Expression") + NoLegend()
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/Pardee_MitochondrialCounts.pdf", width = 11, height = 7)
+p
+dev.off()
+```
+
+```{r, eval = FALSE}
+allSampleObj <- subset(allSampleObj, subset =  HTO_classification.global == "Singlet")
+
+#Removing samples from patient 3
+# allSampleObj <- subset(allSampleObj, subset = Patient != "Patient03")
+
+#Also removing samples from patients 5, 6, 8, 9 as CITE-seq was not applied 
+allSampleObj <- subset(allSampleObj, subset = Patient %in% c("Patient10", "Patient12", "Patient13",
+                                                             "Patient14", "Patient15", "Patient16",
+                                                             "Patient17", "Patient18", "Patient19", "Patient20"))
+
+#Based on word doc (https://docs.google.com/document/d/17eF-KzMb0RcZ46tfj99cus3Gw6aXfkAk/edit), Patient 14 has several samples not applied via CITEseq, which we will remove
+allSampleObj <- allSampleObj[,-intersect(which(allSampleObj$Batch == "BUMC_LR_014_T"), which(allSampleObj$HTO_classification == "ADT6"))]
+allSampleObj <- allSampleObj[,-intersect(which(allSampleObj$Batch == "BUMC_LR_014_L"), which(allSampleObj$HTO_classification == "ADT9"))]
+allSampleObj <- allSampleObj[,-intersect(which(allSampleObj$Batch == "BUMC_LR_014_L"), which(allSampleObj$HTO_classification == "ADT8"))]
+
+#Empty droplets passing an ADT expression threshold were clustered, as we expected to see some "true cell" populations that had low transcript counts (i.e. neutrophils). We will take all clusters that he annotated as a likely cell population, rather than a technical artifact, which is based on the S100A8 expression (RNA) and CD16 expression (Surface protein).
+
+allSampleObjEmpty <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/NeutrophilIdentification/no_combatseq_with_emptydrops_allSampleObj_EmptyDrops_PostSeurat_ADTClustering_WithoutHarmony.rds")
+
+emptyBarcodesPassQC <- colnames(allSampleObjEmpty)[which(allSampleObjEmpty$ADTCluster %in% c(30, 18, 2, 6, 7, 5, 25, 26))]
+
+emptyBarcodesPassQC <- intersect(emptyBarcodesPassQC, colnames(allSampleObj))
+
+allSampleObjNoEmpty <- subset(allSampleObj, EmptyDroplet != "EmptyDroplet")
+allSampleObjEmpty <- allSampleObjEmpty[,emptyBarcodesPassQC]
+
+allSampleObjEmptySub <- allSampleObj[,emptyBarcodesPassQC]
+allSampleObjEmptySub$EmptyADTCluster <- allSampleObjEmpty$ADTCluster
+
+rm(allSampleObjEmpty)
+
+allSampleObj <- merge(allSampleObjNoEmpty, allSampleObjEmptySub)
+
+rm(allSampleObjEmptySub)
+rm(allSampleObjNoEmpty)
+gc()
+
+saveRDS(allSampleObj, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/1stPass/20230505_Removed_NonNeutrophilEmptyDroplets_Patients3_5_6_8_9_HTODoublets.rds") #88874 cells passing above thresholds
+
+#Remove all cells that display high ADT contamination level
+allSampleObj <- allSampleObj[,-which(allSampleObj$DecontXContamination > 0.9)]
+
+#Subset by number of CITE-seq features detected
+allSampleObj <- subset(allSampleObj, subset =  CITE_Features > 50)
+#Subset by mitochondrial gene expression percentage
+allSampleObj <- subset(allSampleObj, subset =  percent.mt < 15)
+
+# dim(allSampleObj) #84739 cells passing above thresholds (84739/88874, less than 15% mito, > 50 CITE, < 0.9 DecontX)
+```
+
+```{r, eval = FALSE}
+allSampleObj = NormalizeData(allSampleObj, verbose = FALSE) %>%
+  FindVariableFeatures(selection.method = 'vst', verbose = FALSE) %>%
+  ScaleData(verbose = FALSE) %>%
+  RunPCA(verbose = FALSE) 
+
+# ElbowPlot(allSampleObj, ndims = 40)
+
+allSampleObj<- FindNeighbors(allSampleObj, dims = 1:30, verbose = FALSE, reduction = "pca")
+allSampleObj <- FindClusters(allSampleObj, resolution = 1.0, verbose = FALSE)
+allSampleObj <- RunUMAP(allSampleObj, reduction = "pca", dims=1:30, verbose = FALSE)
+
+allSampleObj[["RNACluster"]] <- Idents(allSampleObj)
+
+
+#Add hashtag infos
+sampleInfoTable <- data.frame(Patient = allSampleObj$Patient,
+                              TumorOnly = allSampleObj$OnlyTumor,
+                              Hashtag = allSampleObj$HTO_classification)
+
+lymphInfo <- sapply(1:nrow(sampleInfoTable),function(z){
+    y = sampleInfoTable[z,"Patient"]
+    x = sampleInfoTable[z,"Hashtag"]
+    if(is.na(x)){
+        return("Tumor")
+    }else{
+        if(y == "Patient10"){
+            if(x == "ADT8"){
+                return("Tumor")
+            }else{
+                return("Lymph_4R")
+            }
+        }else if(y == "Patient06"){
+            if(x == "ADT6"){
+                return("Lymph_9")
+            }else if(x == "ADT7"){
+                return("Lymph_4R")
+            }else if(x == "ADT8"){
+                return("Lymph_7")
+            }else if(x == "ADT9"){
+                return("Lymph_12R")
+            }
+        }else if(y == "Patient08"){
+            if(x == "ADT6"){
+                return("Lymph_9")
+            }else if(x == "ADT7"){
+                return("Lymph_10L")
+            }else if(x == "ADT8"){
+                return("Lymph_7")
+            }else if(x == "ADT9"){
+                return("Lymph_5")
+            }
+        }else if(y == "Patient09"){
+            if(x == "ADT6"){
+                return("Tumor")
+            }else if(x == "ADT7"){
+                return("Lymph_7")
+            }else if(x == "ADT8"){
+                return("Lymph_9")
+            }
+        }else if(y == "Patient12"){
+            if(x == "ADT5"){
+                return("Lymph_9")
+            }else if(x == "ADT6"){
+                return("Lymph_7")
+            }else if(x == "ADT7"){
+                return("Lymph_4R")
+            }else if(x == "ADT8"){
+                return("Lymph_10R")
+            }else if(x == "ADT9"){
+                return("Lymph_12R")
+            }else if(x == "ADT10"){
+                return("Tumor")
+            }
+        }else if(y == "Patient14"){
+            if(x == "ADT5"){
+                return("Lymph_5")
+            }else if(x == "ADT6"){
+                return("Lymph_8")
+            }else if(x == "ADT7"){
+                return("Lymph_7")
+            }else if(x == "ADT8"){
+                return("Lymph_10L")
+            }else if(x == "ADT9"){
+                return("Lymph_9")
+            }else if(x == "ADT10"){
+                return("Lymph_10L")
+            }
+        }else if(y == "Patient15"){
+            if(x == "ADT7"){
+                return("Lymph_5")
+            }else if(x == "ADT8"){
+                return("Lymph_10L")
+            }else if(x == "ADT9"){
+                return("Lymph_9")
+            }
+        }else if(y == "Patient16"){
+            if(x == "ADT5"){
+                return("Lymph_7")
+            }else if(x == "ADT6"){
+                return("Lymph_11R")
+            }else if(x == "ADT7"){
+                return("Lymph_4R")
+            }else if(x == "ADT8"){
+                return("Lymph_10R")
+            }
+        }else if(y == "Patient17"){
+            if(x == "ADT5"){
+                return("Lymph_9")
+            }else if(x == "ADT6"){
+                return("Lymph_7")
+            }else if(x == "ADT7"){
+                return("Lymph_4R")
+            }
+        }else if(y == "Patient18"){
+            if(x == "ADT5"){
+                return("Lymph_7")
+            }else if(x == "ADT6"){
+                return("Lymph_7")
+            }else if(x == "ADT7"){
+                return("Lymph_10L")
+            }else if(x == "ADT8"){
+                return("Lymph_5")
+            }else if(x == "ADT9"){
+                return("Tumor")
+            }else if(x == "ADT10"){
+                return("Normal")
+            }
+        }else if(y == "Patient19"){
+            if(x == "ADT5"){
+                return("Lymph_7")
+            }else if(x == "ADT6"){
+                return("Lymph_4R")
+            }else if(x == "ADT7"){
+                return("Lymph_11R")
+            }else if(x == "ADT8"){
+                return("Lymph_10R")
+            }else if(x == "ADT9"){
+                return("Tumor")
+            }else if(x == "ADT10"){
+                return("Normal")
+            }
+        }else if(y == "Patient20"){
+            if(x == "ADT5"){
+                return("Lymph_8")
+            }else if(x == "ADT6"){
+                return("Lymph_7")
+            }else if(x == "ADT7"){
+                return("Lymph_10L")
+            }else if(x == "ADT8"){
+                return("Lymph_5")
+            }else if(x == "ADT9"){
+                return("Tumor")
+            }else if(x == "ADT10"){
+                return("Normal")
+            }
+        }
+    }
+})
+
+allSampleObj$HashedInfo <- lymphInfo
+allSampleObj$SampleInfo <- paste(allSampleObj$Patient, allSampleObj$HashedInfo, sep = "_")
+
+
+#Getting consensus doublet info
+doubletDf <- data.frame(scDblFinder = allSampleObj$scDblFinder_doublet_call,
+                        cxds = allSampleObj$scds_cxds_call,
+                        bcds = allSampleObj$scds_bcds_call,
+                        hybrid = allSampleObj$scds_hybrid_call)
+
+consensusDoublet <- apply(doubletDf, 1, function(x){
+    return(sum(x == "Doublet"))
+})
+
+consensusDoublet <- ifelse(consensusDoublet > 2, "Doublet", "Singlet")
+
+allSampleObj$ConsensusDoublet <- consensusDoublet
+
+#Editing error found:
+allSampleObj$Lymph_Tumor_Normal <- gsub("_.*","",allSampleObj$HashedInfo)
+allSampleObj$SampleInfo[which(allSampleObj$Batch == "BUMC_LR_014_T")] <- "Patient14_Tumor"
+allSampleObj$Lymph_Tumor_Normal[which(allSampleObj$Batch == "BUMC_LR_014_T")] <- "Tumor"
+
+saveRDS(allSampleObj, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/1stPass/20230505_no_harmony_allSampleObj_PostSeurat_RNAOnlyClustering_DecontXThres.rds")
+```
+
+```{r}
+allSampleObj <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/1stPass/20230505_no_harmony_allSampleObj_PostSeurat_RNAOnlyClustering_DecontXThres.rds")
+```
+
+
+## UMAP {.tabset}
+
+### Seurat Cluster
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, label = TRUE)
+```
+
+### Batch
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "Batch")
+```
+
+### Patient
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "Patient")
+```
+
+### Patient + Sample origin
+
+```{r, fig.width = 14, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "SampleInfo")
+```
+
+### Doublet call, consensus
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "ConsensusDoublet")
+```
+
+### Lymph/Tumor/Normal
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+allSampleObj$Lymph_Tumor_Normal <- gsub("_.*","",allSampleObj$HashedInfo)
+DimPlot(allSampleObj, group.by = "Lymph_Tumor_Normal")
+```
+
+### Empty droplet
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "EmptyDroplet")
+```
+
+### RNA markers {.tabset}
+
+#### CD3D
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD3D", reduction = "umap")
+```
+
+#### CD4
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD4", reduction = "umap")
+```
+
+#### IL7R
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "IL7R", reduction = "umap")
+```
+
+#### CD8A
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD8A", reduction = "umap")
+```
+
+#### NKG7
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "NKG7", reduction = "umap")
+```
+
+#### CD56
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "NCAM1", reduction = "umap")
+```
+
+#### CD14
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD14", reduction = "umap")
+```
+
+#### CD16
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "FCGR3A", reduction = "umap")
+```
+
+#### MARCO
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "MARCO", reduction = "umap")
+```
+
+
+#### CD1C
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD1C", reduction = "umap")
+```
+
+#### MS4A1
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "MS4A1", reduction = "umap")
+```
+
+#### MZB1
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "MZB1", reduction = "umap")
+```
+
+#### CD19
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD19", reduction = "umap")
+```
+
+#### TPSAB1
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "TPSAB1", reduction = "umap")
+```
+
+#### IRF7
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "IRF7", reduction = "umap")
+```
+
+#### IL3RA
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "IL3RA", reduction = "umap")
+```
+
+#### S100A8
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "S100A8", reduction = "umap")
+```
+
+#### EPCAM
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "EPCAM", reduction = "umap")
+```
+
+
+## Broad clustering of cell types
+
+```{r}
+allSampleObj$BroadClustering1Pass <-
+    sapply(allSampleObj$RNACluster, function(x){
+    if(x %in% c(30)){
+        return("Mast")
+    }else if(x %in% c(19, 20, 22, 32)){
+        return("Epithelial")
+    }else if(x %in% c(27)){
+        return("pDC")
+    }else if(x %in% c(18, 23)){
+        return("Plasma")
+    }else if(x %in% c(3, 14, 29)){
+        return("B")
+    }else if(x %in% c(0, 1, 2, 5,
+                      7, 9, 10, 12, 13,
+                      14, 17, 25)){
+        return("TNK")
+    }else if(x %in% c(6,31)){
+        return("Neutrophil")
+    }else{
+        return("Myeloid")
+    }
+})
+
+
+#B - 8109 cells
+#Epithelial - 3471 cells
+#Mast - 347 cells
+#Myeloid - 18086 cells
+#Neutrophil - 4455 cells
+#Plasma - 2089 cells
+#TNK - 47629 cells
+#pDC - 553 cells
+```
+
+```{r}
+allSampleObj$BroadClustering1Pass <- factor(allSampleObj$BroadClustering1Pass,
+                                               levels = rev(rev(c("TNK", "B", "Plasma", "pDC","Myeloid",
+                                                           "Neutrophil",
+                                                          "Mast", "Epithelial"))))
+DimPlot(allSampleObj, group.by = "BroadClustering1Pass", label = TRUE)
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/3rdPass/AllCellTypesCombined/Celltype_p1.pdf",
+width = 9, height = 6)
+DimPlot(allSampleObj, group.by = "BroadClustering1Pass", label = FALSE) + NoLegend()
+dev.off()
+
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/3rdPass/AllCellTypesCombined/Celltype_p1_tnl.pdf", width = 9, height = 6)
+DimPlot(allSampleObj, group.by = "Lymph_Tumor_Normal", label = FALSE, cols = c("blue","green3","red")) + NoLegend()
+dev.off()
+
+
+```
+
+
+```{r, eval = FALSE}
+# #Saving subsetted Seurat object
+
+tnkObj <- subset(allSampleObj, BroadClustering1Pass %in% c("TNK"))
+bCellObj <- subset(allSampleObj, BroadClustering1Pass %in% c("B"))
+plasmaObj <- subset(allSampleObj, BroadClustering1Pass %in% c("Plasma"))
+myeloidObj <- subset(allSampleObj, BroadClustering1Pass %in% c("Myeloid", "cDCs", "Alveolar Macs"))
+neutrophilObj <- subset(allSampleObj, BroadClustering1Pass %in% "Neutrophil")
+epithelialObj <- subset(allSampleObj, BroadClustering1Pass %in% "Epithelial")
+mastObj <- subset(allSampleObj, BroadClustering1Pass %in% "Mast")
+pdcObj <- subset(allSampleObj, BroadClustering1Pass %in% "pDC")
+
+saveRDS(tnkObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/TNK/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_TNK.rds"))
+saveRDS(bCellObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/BCell/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_BCell.rds"))
+saveRDS(plasmaObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/Plasma/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_Plasma.rds"))
+saveRDS(myeloidObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/Myeloid/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_Myeloid.rds"))
+saveRDS(neutrophilObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/Neutrophil/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_Neutrophil.rds"))
+saveRDS(epithelialObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/Epithelial/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_Epithelial.rds"))
+saveRDS(mastObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/Mast/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_Mast.rds"))
+saveRDS(pdcObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/pDC/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_pDC.rds"))
+
+```
+
+## Violin Plots {.tabset}
+
+### CD3D
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "CD3D")
+```
+
+### CD56
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "NCAM1")
+```
+
+### CD14
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "CD14")
+```
+
+### CD16
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "FCGR3A")
+```
+
+### CD1C
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "CD1C")
+```
+
+### LAMP3
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "LAMP3")
+```
+
+### MS4A1
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "MS4A1")
+```
+
+### CD19
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "CD19")
+```
+
+### MZB1
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "MZB1")
+```
+
+### IL3RA
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "IL3RA")
+```
+
+### EPCAM
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "EPCAM")
+```
+
+
+### S100A8
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "S100A8")
+```
+
+
+### TPSAB1
+
+```{r, fig.width = 10, fig.height= 4}
+VlnPlot(allSampleObj, "TPSAB1")
+```
+
+
+```{r, eval = FALSE}
+bCellObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/BCell/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_BCell.rds"))
+bCellObjLymph <- subset(bCellObj, subset = Lymph_Tumor_Normal == "Lymph")
+
+bCellBarcodes <- colnames(bCellObjLymph)
+
+tail(bCellBarcodes)
+bCellBarcodes <- gsub("-1", "", bCellBarcodes)
+bCellBarcodes <- grep("Patient20", bCellBarcodes, value = TRUE)
+bCellBarcodes <- gsub("Patient20_L_", "", bCellBarcodes)
+
+whiteList <- read.table("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq/2021-12-03/outs/fastq_path/AAAJGCJHV/whitelist2.txt", sep = "\t")
+
+
+intersectingBarcodesFromWL <- intersect(bCellBarcodes, whiteList$V1)
+
+whiteListSub <- whiteList[which(whiteList$V1 %in% intersectingBarcodesFromWL),]
+
+write.table(whiteListSub, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq/2021-12-03/outs/fastq_path/AAAJGCJHV/whitelist_bcell.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+```
+
+
+
+```{r}
+allSampleObj$Lymph_Tumor_Normal
+table(allSampleObj$BroadClustering1Pass, allSampleObj$Patient)
+```
+
+```{r, fig.width = 4, fig.height = 3}
+allSampleObjLymph <- subset(allSampleObj, subset = Lymph_Tumor_Normal == "Lymph")
+ggTable <- table(allSampleObjLymph$BroadClustering1Pass, allSampleObjLymph$Patient) %>% prop.table(2) %>% melt()
+
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230410_AACR/20230425_barbypatientln.pdf", width = 4.25, height = 2.75)
+colnames(ggTable) <- c("CellType", "Patient", "Proportion")
+ggplot(ggTable, aes(x = Patient, y = Proportion, fill = CellType)) + geom_bar(stat = "identity") + theme_classic()  + scale_y_continuous(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 45, hjust=1))
+dev.off()
+
+allSampleObjTumor <- subset(allSampleObj, subset = Lymph_Tumor_Normal == "Tumor")
+ggTable <- table(allSampleObjTumor$BroadClustering1Pass, allSampleObjTumor$Patient) %>% prop.table(2) %>% melt()
+
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230410_AACR/20230425_barbypatienttumor.pdf", width = 4.5, height = 2.75)
+colnames(ggTable) <- c("CellType", "Patient", "Proportion")
+ggplot(ggTable, aes(x = Patient, y = Proportion, fill = CellType)) + geom_bar(stat = "identity") + theme_classic()  + scale_y_continuous(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 45, hjust=1))
+dev.off()
+
+
+allSampleObjNormal <- subset(allSampleObj, subset = Lymph_Tumor_Normal == "Normal")
+ggTable <- table(allSampleObjNormal$BroadClustering1Pass, allSampleObjNormal$Patient) %>% prop.table(2) %>% melt()
+
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230410_AACR/20230425_barbypatientnormal.pdf", width = 2.75, height = 2.75)
+colnames(ggTable) <- c("CellType", "Patient", "Proportion")
+ggplot(ggTable, aes(x = Patient, y = Proportion, fill = CellType)) + geom_bar(stat = "identity") + theme_classic()  + scale_y_continuous(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 45, hjust=1))
+dev.off()
+```
+
+
+
+```{r}
+fm <- FindAllMarkers(allSampleObj)
+saveRDS(fm, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/3rdPass/",sampleType,"/20230505_Seurat_3rdPass_Multimodal_FindMarkers_RNA_",sampleType,".rds"))
+
+DefaultAssay(allSampleObj) <- "CITE"
+allMarkersADT <- FindAllMarkers(allSampleObj,test.use = "MAST", latent.vars = "Batch", verbose = FALSE)
+saveRDS(allMarkersADT, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/3rdPass/",sampleType,"/20230505_Seurat_3rdPass_Multimodal_FindMarkers_ADT_",sampleType,".rds"))
+```
+
+# Scatter plot for CITE-seq expression, total
+
+```{r, fig.width = 10, fig.height = 5}
+allSampleObj$nCount_CITE <- colSums(GetAssayData(allSampleObj, assay = "CITE"))
+allSampleObj$PatientSample <- paste0(allSampleObj$Patient, allSampleObj$Lymph_Tumor_Normal)
+VlnPlot(allSampleObj, "nCount_CITE", group.by = "PatientSample", pt.size = 0.25) + NoLegend() + ggtitle("Total CITE-seq expression per cell")
+```
+
+```{r}
+library(Seurat)
+```
+
+```{r, eval = FALSE}
+#4/26/23 - Create Fastq file for B cells taken from LN of Patient 20 
+
+bCellObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/BCell/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_BCell.rds"))
+bCellObjLymph <- subset(bCellObj, subset = Lymph_Tumor_Normal == "Lymph")
+
+bCellBarcodes <- colnames(bCellObjLymph)
+
+tail(bCellBarcodes)
+bCellBarcodes <- gsub("-1", "", bCellBarcodes)
+bCellBarcodes <- grep("Patient20", bCellBarcodes, value = TRUE)
+bCellBarcodes <- gsub("Patient20_L_", "", bCellBarcodes)
+
+whiteList <- read.table("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq/2021-12-03/outs/fastq_path/AAAJGCJHV/whitelist2.txt", sep = "\t")
+
+
+intersectingBarcodesFromWL <- intersect(bCellBarcodes, whiteList$V1)
+
+whiteListSub <- whiteList[which(whiteList$V1 %in% intersectingBarcodesFromWL),]
+
+write.table(whiteListSub, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq/2021-12-03/outs/fastq_path/AAAJGCJHV/whitelist_bcell.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+```
+
+```{r, eval = FALSE}
+# 4/27/23 - Send barcodes for B cells
+
+barcodeDF <- data.frame(Barcode = colnames(bCellObj))
+barcodeDF$Patient <- gsub("_.*", "", barcodeDF$Barcode)
+
+barcodeDF$SampleID <- gsub("_.{16}-1", "", barcodeDF$Barcode)
+barcodeDF$SampleID <- gsub("Patient", "LR_0", barcodeDF$SampleID)
+barcodeDF$Barcode <- gsub(".*_","",barcodeDF$Barcode)
+barcodeDF$Barcode <- gsub("-1","",barcodeDF$Barcode)
+
+dirDF <- data.frame(Filepath = list.files(path = "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq", pattern = "_S[13579]_L001_R1_001.fastq.gz", recursive = TRUE, include.dirs = TRUE, full.names = TRUE))
+
+dirDF$Sample <- gsub("_L001_R1_001.fastq.gz","",dirDF$Filepath)
+dirDF$Sample <- gsub("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Fastq/.*/","",dirDF$Sample) 
+dirDF$Sample <- gsub(".*LR","LR",dirDF$Sample) 
+dirDF$Sample <- gsub("_A.*","",dirDF$Sample) 
+dirDF$Sample <- gsub("_B.*","",dirDF$Sample) 
+
+dirDF <- dirDF[which(dirDF$Sample %in% intersect(dirDF$Sample, barcodeDF$SampleID)),]
+
+dirDF$Filepath <- gsub("/CJ.*fastq.gz","/",dirDF$Filepath)
+dirDF$Filepath <- gsub("/XC.*fastq.gz","/",dirDF$Filepath)
+
+finalDF <- merge(barcodeDF, dirDF, by.x = "SampleID", by.y = "Sample")
+
+write.csv(finalDF, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/1stPass/20230427_ShareWithDarren_BLymphocytes.csv")
+```
+
+```{r}
+dfTable <- table(allSampleObj$BroadClustering1Pass, allSampleObj$Batch) %>% prop.table(2)
+allSampleObj$nCount_CITE <- colSums(GetAssayData(allSampleObj, assay = "CITE"))
+citeTable <- data.frame(CITE = allSampleObj$nCount_CITE, 
+                        Sample = allSampleObj$Batch)
+
+citeTable  %>% group_by(Sample) %>% 
+  summarise(mean_citeExprs=mean(CITE),
+            .groups = 'drop') -> citeTableGrouped
+```
+
+
+```{r, fig.width=14, fig.height=7}
+plot(citeTableGrouped$mean_citeExprs, dfTable["Neutrophil",], pch = 20)
+text(citeTableGrouped$mean_citeExprs, dfTable["Neutrophil",],labels = (citeTableGrouped$Sample))
+```
+
+
+
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "CD3D", reduction = "umap", max.cutoff = 15, cols = c("gray90", "blue"))
+```
+
+
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "RNA"
+FeaturePlot(allSampleObj, "IRF7", reduction = "umap", max.cutoff = 15, cols = c("gray90", "blue"))
+```
+
+```{r, eval = TRUE}
+DefaultAssay(allSampleObj) <- "CITE"
+FeaturePlot(allSampleObj, "CD45RA", reduction = "umap", max.cutoff = 25, cols = c("gray90", "darkgreen"))
+```

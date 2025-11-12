@@ -1,0 +1,718 @@
+---
+title: "IMC Analysis"
+author: "Yusuke Koga"
+output:
+ html_document:
+     toc: true
+     toc_float: true
+     number_sections: true
+     theme: cosmo
+     code_folding: hide
+---
+
+```{r}
+# Load necessary R packages
+suppressPackageStartupMessages({
+    library(Seurat)
+    library(dplyr)
+    library(ggplot2)
+    library(ggridges)
+    library(gridExtra)
+    library(DropletUtils)
+    library(singleCellTK)
+    library(celda)
+    library(grDevices)
+    library(pheatmap)
+    library(reshape2)
+    library(knitr)
+    library(harmony)
+    library(kableExtra)
+    library(enrichR)
+    library(monocle3)
+    library(patchwork)
+    library(SeuratWrappers)
+    library(DescTools)
+})
+
+set.seed(12345)
+
+# Define tab levels for HTML report
+tab2 <- "## %s {-}
+"
+tab3 <- "### %s {-}
+"
+tab4 <- "#### %s {-}
+"
+tab5 <- "##### %s {-}
+"
+space <- "
+
+"
+
+```
+
+
+```{r}
+# Additional functions
+countInteractionsPerCell <- function (object, group_by, label, colPairName){
+    labelVector <- as.character(colData(object)[,label])
+
+    if (is.factor(colData(object)[[group_by]])) {
+        colData(object)[[group_by]] <- as.factor(as.character(colData(object)[[group_by]]))
+    }
+    cur_label <- factor(colData(object)[[label]])
+    cur_table <- imcRtools:::.prepare_table(object, group_by, cur_label,
+        colPairName)
+
+    dat_temp <- dcast.data.table(cur_table, "group_by + from_label + total + from ~ to_label",
+        value.var = "ct", fun.aggregate = sum, fill = 0)
+    dat_temp <- melt.data.table(dat_temp, id.vars = c("group_by",
+        "from_label", "from", "total"), variable.name = "to_label",
+        value.name = "ct")
+    total <- NULL
+    dat_temp[, `:=`(ct, ct/total)]
+    dat_temp <- dcast.data.table(dat_temp, "group_by + from_label ~ to_label",
+        value.var = "ct", fun.aggregate = sum, fill = 0, drop = FALSE)
+    dat_temp <- melt.data.table(dat_temp, id.vars = c("group_by",
+        "from_label"), variable.name = "to_label", value.name = "ct")
+
+    dcastRes <- dcast(dat_temp, formula = group_by ~ to_label, value.var = "ct", fun.aggregate=sum)
+    return(dcastRes)
+}
+```
+
+# Step 1. Load data, preprocessing
+
+```{r, eval = FALSE}
+spe <- read_steinbock("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Steinbock/")
+
+# Add additional metadata
+colnames(spe) <- paste0(spe$sample_id, "_", spe$ObjectNumber)
+
+spe$image_id <- spe$sample_id
+
+# Extract patient id and ROI id from sample name
+spe$ln_id <- gsub("_.*","",spe$sample_id)
+spe$patient_id <- gsub("-.*","",spe$sample_id)
+spe$ROI <- str_extract(spe$sample_id, "00[1-8]")
+
+spe$indication <- "NSCLC"
+
+spe <- spe[,spe$area >= 20]
+#Remove abnormal cell
+spe <- spe[,spe$area < 500]
+assay(spe, "asin") <- asinh(counts(spe)/1)
+
+spe$Mask <- "Mask"
+
+# Removing 13-8 as it is a metastatic LN
+spe <- spe[,which(spe$ln_id != "Patient13-8")]
+# Removing 15-5 due to segmentation failure 
+spe <- spe[,which(spe$sample_id != "Patient15-5_ROI_001_1")]
+```
+
+# Step 2. Clustering of imaging data, 1st-pass
+
+We will initially generate a smaller number of clusters in order to identify broader regions of cell types.
+
+```{r, eval = FALSE}
+speCelda <- spe
+speCelda <- runSeuratFindHVG(speCelda, useAssay = "counts")
+vstMean <- rowData(speCelda)$seurat_variableFeatures_vst_mean
+vstVar <- rowData(speCelda)$seurat_variableFeatures_vst_varianceStandardized
+featureName <- rownames(speCelda)
+
+useFeature <- sapply(1:nrow(speCelda), function(x){
+    if(featureName[x] %in% c("Membrane", "DNA191", "DNA193", "LAG3", "EpCAM", "CD38")){
+        return(FALSE)
+    }else{
+        return(TRUE)
+    }
+})
+
+altExp(speCelda, "featureSubset") <- speCelda[useFeature,]
+
+speCeldaCRes <- celdaGridSearch(
+  speCelda,
+  useAssay = "counts",
+  altExpName = "featureSubset",
+  model = "celda_C",
+  paramsFixed = NULL,
+  maxIter = 200,
+  nchains = 4,
+  cores = 12,
+  paramsTest = list(K = seq(3, 14)),
+  bestOnly = TRUE,
+  seed = 12345,
+  perplexity = TRUE,
+  verbose = TRUE,
+  logfilePrefix = "Celda"
+)
+saveRDS(speCeldaCRes, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/1stPass/20241019_CeldaClustering_1stPass_NometastaticLNs_CeldaGridSearchResult_Version3.rds")
+
+```
+
+## Elbow plot
+
+An elbow plot was generated for the difference between the perplexity value of a clustering result, K, and the previous clustering result, K-1(e.g., the difference between K = 5 and K = 4, etc.) in order to determine optimal number of clusters.
+
+```{r, eval = TRUE}
+speCeldaCGridSearchRes <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/1stPass/20241019_CeldaClustering_1stPass_NometastaticLNs_CeldaGridSearchResult_Version3.rds")
+plotRPC(speCeldaCGridSearchRes)
+```
+
+
+```{r, eval = FALSE}
+# K = 8 chosen as number of clusters
+speCeldaCRes <- subsetCeldaList(speCeldaCGridSearchRes, params = list(K = 8))
+table(altExp(speCeldaCRes)$celda_cell_cluster)
+
+spe$CeldaClusters <- altExp(speCeldaCRes)$celda_cell_cluster
+saveRDS(spe, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/1stPass/20241020_SpatialExperimentObject_NometastaticLNs_Post1stPassCeldaClustering_K8_Version3.rds")
+```
+
+# Step 2. Clustering of imaging data, 1st-pass
+
+```{r, eval = FALSE}
+spe <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/1stPass/20241020_SpatialExperimentObject_NometastaticLNs_Post1stPassCeldaClustering_K8_Version3.rds")
+```
+
+```{r, eval = FALSE}
+for(clus in 1:8){
+speSubset <- spe[,which(spe$CeldaClusters == clus)]
+speCelda <- speSubset
+speCelda <- runSeuratFindHVG(speCelda, useAssay = "counts")
+vstMean <- rowData(speCelda)$seurat_variableFeatures_vst_mean
+vstVar <- rowData(speCelda)$seurat_variableFeatures_vst_varianceStandardized
+featureName <- rownames(speCelda)
+
+useFeature <- sapply(1:nrow(speCelda), function(x){
+    if(vstMean[x] < 5){
+        return(FALSE)
+    }else if(vstVar[x] < 0.5){
+        return(FALSE)
+    }else if(featureName[x] %in% c("Membrane", "DNA191", "DNA193", "EpCAM", "LAG3", "CD38", "CD127")){
+        return(FALSE)
+    }else{
+        return(TRUE)
+    }
+})
+
+altExp(speCelda, "featureSubset") <- speCelda[useFeature,]
+
+speCeldaCRes <- celdaGridSearch(
+  speCelda,
+  useAssay = "counts",
+  altExpName = "featureSubset",
+  model = "celda_C",
+  paramsFixed = NULL,
+  maxIter = 200,
+  nchains = 4,
+  cores = 12,
+  paramsTest = list(K = seq(2, 20)),
+  bestOnly = TRUE,
+  seed = 12345,
+  perplexity = TRUE,
+  verbose = TRUE,
+  logfilePrefix = "Celda"
+)
+saveRDS(speCeldaCRes, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241126/20241126_CeldaClustering_2ndPass_CeldaGridSearchResult_Cluster",clus,".rds"))
+}
+```
+
+## Elbow plot
+
+```{r, results = "asis"}
+cat(space)
+for(x in 1:8){
+    speGridSearchRes <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241126/20241126_CeldaClustering_2ndPass_CeldaGridSearchResult_Cluster",x,".rds"))
+    cat(sprintf(tab3, paste0("Cluster ", x)))
+    print(plotRPC(speGridSearchRes))
+    cat(space)
+}
+```
+
+```{r, eval = FALSE}
+spe <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/1stPass/20241020_SpatialExperimentObject_NometastaticLNs_Post1stPassCeldaClustering_K8_Version3.rds")
+clusterDF <- data.frame(Level2Cluster = rep("", ncol(spe)))
+rownames(clusterDF) <- colnames(spe)
+selectedK <- c(5, 5, 8, 5, 4, 7, 4, 5)
+
+for(x in 1:8){
+    speGridSearchRes <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241020//20241020_CeldaClustering_2ndPass_CeldaGridSearchResult_Cluster",x,"Version3.rds"))
+    speCeldaCRes <- subsetCeldaList(speGridSearchRes, params = list(K = selectedK[x]))
+    clusterDF[colnames(speCeldaCRes), "Level2Cluster"] <- paste0(x,"-",altExp(speCeldaCRes)$celda_cell_cluster)
+}
+
+spe$CeldaClusters2ndPass <- clusterDF$Level2Cluster
+
+#Additional edit: 
+
+#Combining Cluster 3:
+spe$CeldaClusters2ndPass <- sapply(spe$CeldaClusters2ndPass, function(x){
+    if(x %in% c("3-4", "3-5", "3-6")){
+        return("3-4")
+    }else if(x == "3-7"){
+        return("3-5")
+    }else if(x == "3-8"){
+        return("3-6")
+    }else{
+        return(x)
+    }
+})
+
+saveRDS(spe, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241126/20250719_SpatialExperimentObject_NometastaticLNs_Post2ndPassCeldaClustering_K8_Version11.rds")
+```
+
+```{r}
+spe <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241126/20250716_SpatialExperimentObject_NometastaticLNs_Post2ndPassCeldaClustering_K8_Version11.rds")
+
+spe$TumorStage <- sapply(spe$patient_id, function(x){
+    if(grepl("Patient19",x)){
+        return("High Stage")
+    }else if(grepl("Patient15",x)){
+        return("High Stage")
+    }else if(grepl("Patient13",x)){
+        return("High Stage")
+    }else if(grepl("Patient12",x)){
+        return("High Stage")
+    }else{
+        return("Low Stage")
+    }
+})
+
+spe$N1N2 <- sapply(spe$ln_id, function(x){
+  if(grepl("Tumor",x)){
+      return("Tumor")
+  }else if(grepl("-1",x)){
+      return("N1")
+  }else{
+      return("N2")
+  }
+})
+```
+
+
+```{r}
+genesToUse <-  c("CD19", "CD138", "CD38","FoxP3", "CD4", 
+                       "CD28", "CD8a", "CD14", "CD68", "TIM3",
+                       "CD163", "LAMP3", "CD141",
+                       "CD1c", "CD11c", "CD45RA", "CD45RO",
+                       "HLADRB", "CD86", "PDL1", 
+                       "MKI67", "PD1", "CD39", "CD15", "CD127")
+```
+
+## Violin plots {.tabset}
+
+```{r, results = "asis",  fig.width = 14, fig.height = 4}
+spe$CeldaClusters2ndPass <- factor(spe$CeldaClusters2ndPass, levels = names(table(spe$CeldaClusters2ndPass)))
+clusterLabel = "CeldaClusters2ndPass"
+for(marker in genesToUse){
+    cat(space)
+    cat(sprintf(tab3, paste0(marker)))
+    spe$Exprs <- assay(spe, "counts")[marker,]
+    # maxCluster <- max(as.numeric(length(unique(colData(spe)[,clusterLabel]))))
+    vPlotRes <- plotSCEViolinColData(inSCE = spe, coldata = "Exprs", groupBy = clusterLabel, plotOrder = levels(spe$CeldaClusters2ndPass),
+                                     summary = "mean", summaryTextSize = 12,
+                         xlab = paste0("Cell Populations"),
+                         ylab = paste0(marker, " Expression"), baseSize = 24, title = marker)
+    print(vPlotRes)
+cat(space)
+}
+```
+
+
+
+## Differential composition
+
+### High Stage N1 vs Other {.tabset}
+
+```{r, eval = FALSE}
+allCellsLN <- spe
+
+sceIMC <- SingleCellExperiment(list(counts = assay(allCellsLN)))
+sceIMC$Patient <- factor(allCellsLN$patient_id)
+sceIMC$LN <- factor(allCellsLN$ln_id)
+sceIMC$SampleInfo <- factor(allCellsLN$sample_id)
+sceIMC$N1N2 <- factor(allCellsLN$N1N2)
+sceIMC$TumorStage <- factor(allCellsLN$TumorStage)
+sceIMC$Cluster <- factor(allCellsLN$CeldaClusters2ndPass)
+sceIMC$TumorStageN1N2 <- paste0(sceIMC$TumorStage, sceIMC$N1N2)
+
+sceIMC$HighN1 <- factor(ifelse(sceIMC$TumorStageN1N2 == "High StageN1", 1, 0))
+
+sccompRes =
+  sceIMC |>
+  sccomp_glm(
+    formula_composition = ~ HighN1,
+    .sample = LN,
+    .cell_group = Cluster,
+    bimodal_mean_variability_association = FALSE, #TRUE for CITE-seq, FALSE for IMC
+    cores = 4
+  )
+
+saveRDS(sccompRes, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/ClusterLevelAssociationAnalysis/RDS/sccomp/20250715_IMCData_CeldaClusters_Version3_sccompRes_allSamples_HighN1VsOther.rds")
+```
+
+#### Tables {.tabset}
+
+```{r}
+allCellsLN <- spe
+sccompRes <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/ClusterLevelAssociationAnalysis/RDS/sccomp/20250715_IMCData_CeldaClusters_Version3_sccompRes_allSamples_HighN1VsOther.rds")
+sccompResSub <- sccompRes[which(sccompRes$factor == "HighN1"),]
+```
+
+##### High Stage N1 vs Other
+
+```{r}
+knitr::kable(sccompResSub[order(sccompResSub$c_FDR, decreasing = FALSE),], style = "html", row.names = TRUE) %>%
+                  kable_styling(bootstrap_options = "striped") %>%
+                  scroll_box(width = "100%", height = "400px")
+sccompResSubTable <- sccompResSub[order(sccompResSub$c_FDR, decreasing = FALSE), c("Cluster","c_effect", "c_FDR")]
+clustCount <- as.data.frame.table(table(spe$CeldaClusters2ndPass))
+colnames(clustCount) <- c("Cluster", "Count")
+
+sccompResSubTable <- merge(clustCount, sccompResSubTable)
+
+# write.table(x = sccompResSubTable, file = "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Publication/FinalizedAnalyses/AssociationAnalysis/IMC/20250119_IMC_Cluster_Association_HigherStageN1.txt", sep = "\t", row.names = FALSE)
+```
+
+#### Volcano plots {.tabset}
+
+##### N1/N2
+
+```{r, fig.width = 7, fig.height = 5.5, eval = FALSE}
+seuratDF <- table(allCellsLN$TumorStage, allCellsLN$CeldaClusters2ndPass) 
+# seuratDF <- table(allCellsLNOnly2$stage, allCellsLNOnly2$CeldaClusters2ndPass)
+seuratDF <- seuratDF %>% prop.table(1)
+seuratDF <- seuratDF[,order(colnames(seuratDF))]
+
+stageTableForFigure <- sccompResSub[!is.nan(sccompResSub$c_FDR),]
+stageTableForFigure$FDR <- stageTableForFigure$c_FDR
+stageTableForFigure$Estimates <- stageTableForFigure$c_effect
+
+
+stageTableForFigure$Significance <- sapply(stageTableForFigure$Cluster, function(x){
+    fdr = stageTableForFigure[which(stageTableForFigure$Cluster == x),"FDR"]
+    coefficient = stageTableForFigure[which(stageTableForFigure$Cluster == x),"Estimates"]
+    if(fdr < 0.05){
+        if(coefficient < 0){
+            return("Enriched, High Stage N1")
+        }else{
+            return("Enriched, Other")
+        }
+    }else{
+        return("Not significant")
+    }
+}) 
+stageTableForFigure$LogFDR <- -log(stageTableForFigure$FDR)
+
+numCells <- as.data.frame(table(allCellsLN$CeldaClusters2ndPassNew))
+colnames(numCells) <- c("Cluster", "Number of cells (in LN)")
+
+stageTableForFigure <- merge(stageTableForFigure, numCells, by = "Cluster")
+
+stageTableForFigure$LogFDR[which(stageTableForFigure$LogFDR > 15)] <- 15 #Adjust for plasma_0
+
+scatterLabels <- stageTableForFigure$Cluster
+scatterLabels[which(stageTableForFigure$FDR > 0.05)] <- ""
+
+# pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20240120/AssociationAnalysis/20240410_stage_Enrichment_logit_5patients.pdf", width = 8, height = 5)
+ggplot(stageTableForFigure, aes(y=LogFDR, x=-Estimates, color = Significance)) +
+  geom_point(aes(size = `Number of cells (in LN)`)) +
+  geom_text_repel(label=scatterLabels, show.legend=FALSE) + theme_classic()+ scale_color_manual(values=c("firebrick","orange","gray90")) + xlab("Coefficients, logit model") + xlim(c(-2, 2))+ theme(axis.text.x = element_text(size = 15), axis.text.y = element_text( size = 15), axis.title.x = element_text( size = 17), axis.title.y = element_text(size = 17), strip.text = element_text(size=15))
+```
+
+
+## Boxplots {.tabset}
+
+### Stage + N1/N2 {.tabset}
+
+```{r, results = "asis", fig.width = 5, fig.height = 5.5, message = FALSE, warning = FALSE, eval = TRUE}
+spe$SampleN1N2 <- paste0(spe$ln_id, 
+                              "_", spe$N1N2)
+seuratDF <- table(spe$SampleN1N2, spe$CeldaClusters2ndPass) 
+# seuratDF <- table(allCellsLNOnly4P$N1N2, allCellsLNOnly4P$CellTypeAnnotation) 
+seuratDF <- seuratDF %>% prop.table(1)
+seuratDF <- seuratDF[,order(colnames(seuratDF))]
+
+seuratDF <- seuratDF %>% reshape2::melt()
+colnames(seuratDF) <- c("Sample", "Cluster", "Value")
+seuratDF$Patient <- gsub("-.*","",seuratDF$Sample)
+
+seuratDF$Cluster <- factor(seuratDF$Cluster)
+seuratDF$SampleType <- gsub(".*_","",seuratDF$Sample)
+
+seuratDF$SampleType <- factor(seuratDF$SampleType, levels = c("N1", "N2"))
+
+seuratDF$Stage <- sapply(seuratDF$Patient, function(x){
+    if(grepl("Patient19",x)){
+        return("High Stage")
+    }else if(grepl("Patient15",x)){
+        return("High Stage")
+    }else if(grepl("Patient13",x)){
+        return("High Stage")
+    }else if(grepl("Patient12",x)){
+        return("High Stage")
+    }else{
+        return("Low Stage")
+    }
+})
+
+for(clust in unique(seuratDF$Cluster)){
+     cat(space)
+  cat(sprintf(tab4, paste0(clust)))
+seuratDFSub <- seuratDF[seuratDF$Cluster == clust,]
+    seuratDFSub$Value = seuratDFSub$Value * 100
+    Patient = seuratDFSub$Patient
+    seuratDFSub$Stage <- factor(seuratDFSub$Stage, levels = c("Low Stage", "High Stage"))
+      print(ggplot(data=seuratDFSub, aes(x=Stage, y=Value)) + facet_wrap(~ SampleType, nrow = 1) +   geom_boxplot(outlier.shape = NA) + ggplot2::geom_jitter(aes(color = Patient), width = 0.1, size = 1.5)+ theme_classic()+ ylab("% within entire sample") + ggtitle(clust) + scale_y_continuous(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 45, hjust=1, size = 18), axis.text.y = element_text( size = 18), axis.title.x = element_text( size = 20), axis.title.y = element_text(size = 20), strip.text = element_text(size=25), plot.title = element_text(size = 20)) +
+  theme(plot.title = element_text(hjust = 0.5)) ) + scale_color_manual(values=rev(c("black","darkblue","blue","dodgerblue","seagreen","darkgreen","gold","green2","orange","red","pink"))) 
+  cat(space)
+}
+```
+
+# Niche generation (Kmeans) {.tabset}
+
+```{r, eval = FALSE}
+# Niche analysis, average ver
+
+#Previous niche analysis
+expansionThreshold = 50
+kmeansClust = 50 #Have previously tried 40, ok
+
+spe <- readRDS("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/RDS/2ndPass/20241126/20250719_SpatialExperimentObject_NometastaticLNs_Post2ndPassCeldaClustering_K8_Version11.rds")
+
+#Rerun distance analysis
+spe <- buildSpatialGraph(spe, img_id = "sample_id", type = "expansion", threshold = expansionThreshold)
+
+#Rerun neighbor aggregation
+spe <- aggregateNeighbors(spe, 
+                          colPairName = "expansion_interaction_graph",
+                          aggregate_by = "metadata", 
+                          count_by = "CeldaClusters2ndPass")
+
+#Should I be using an sum-based method rather than average? (Which is what aggregateNeighbors function above is doing)
+# hist(rowSums(as.data.frame(spe$aggregatedNeighbors))) - It's all 1
+
+#Rerun niche generation
+cn_1 <- kmeans(spe$aggregatedNeighbors, centers = kmeansClust, iter.max = 10000)
+spe$Niche <- as.factor(cn_1$cluster)
+
+
+spe$cn_celltypes <- factor(spe$Niche)
+
+spe$TumorStage <- sapply(spe$patient_id, function(x){
+    if(grepl("Patient19",x)){
+        return("High Stage")
+    }else if(grepl("Patient15",x)){
+        return("High Stage")
+    }else if(grepl("Patient13",x)){
+        return("High Stage")
+    }else if(grepl("Patient12",x)){
+        return("High Stage")
+    }else{
+        return("Low Stage")
+    }
+})
+
+spe$N1N2 <- sapply(spe$ln_id, function(x){
+  if(grepl("Tumor",x)){
+      return("Tumor")
+  }else if(grepl("-1",x)){
+      return("N1")
+  }else{
+      return("N2")
+  }
+})
+
+
+sceIMC <- SingleCellExperiment(list(counts = assay(spe)))
+sceIMC$Patient <- factor(spe$patient_id)
+sceIMC$LN <- factor(spe$ln_id)
+sceIMC$SampleInfo <- factor(spe$sample_id)
+sceIMC$N1N2 <- factor(spe$N1N2)
+sceIMC$TumorStage <- factor(spe$TumorStage)
+sceIMC$Niche <- factor(spe$cn_celltypes)
+sceIMC$TumorStageN1N2 <- paste0(sceIMC$TumorStage, sceIMC$N1N2)
+sceIMC$HighN1 <- factor(ifelse(sceIMC$TumorStageN1N2 == "High StageN1", 1, 0))
+
+sccompRes =
+  sceIMC |>
+  sccomp_glm(
+    formula_composition = ~ HighN1 + (1 | Patient),
+    .sample =  LN,
+    .cell_group = Niche,
+    bimodal_mean_variability_association = TRUE,
+    cores = 8
+  )
+
+
+sccompResSub <- sccompRes[which(sccompRes$factor == "HighN1"),]
+sccompResSub[order(sccompResSub$c_FDR, decreasing = FALSE),]
+
+saveRDS(spe, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/20250803_KmeansNiche",kmeansClust,"_AverageInteractionBasedNiches_Distance",expansionThreshold,".rds"))
+saveRDS(sccompRes, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/20250803_KmeansNiche",kmeansClust,"_AverageInteractionBasedNiches_Distance",expansionThreshold,"_sccomp.rds"))
+
+sceIMC$TumorStage <- factor(ifelse(sceIMC$TumorStage == "High Stage", 1, 0))
+sccompRes =
+  sceIMC |>
+  sccomp_glm(
+    formula_composition = ~ TumorStage + (1 | Patient),
+    .sample =  LN,
+    .cell_group = Niche,
+    bimodal_mean_variability_association = TRUE,
+    cores = 8
+  )
+sccompResSub <- sccompRes[which(sccompRes$factor == "TumorStage"),]
+sccompResSub[order(sccompResSub$c_FDR, decreasing = FALSE),]
+saveRDS(sccompRes, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/20250803_KmeansNiche",kmeansClust,"_AverageInteractionBasedNiches_Distance",expansionThreshold,"_sccomp_HighVsLowStage.rds"))
+```
+
+```{r}
+#Previous niche analysis
+expansionThreshold = 50
+kmeansClust = 50 
+spe <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/20250803_KmeansNiche",kmeansClust,"_AverageInteractionBasedNiches_Distance",expansionThreshold,".rds"))
+
+sccompRes <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/IMCAnalysis/20240920/Run1/Analysis/UnsupervisedClustering/CeldaClustering/20241005_NoMets/2ndPass/20250803_KmeansNiche",kmeansClust,"_AverageInteractionBasedNiches_Distance",expansionThreshold,"_sccomp.rds"))
+```
+
+## Differential composition {.tabset}
+
+### High Stage N1 vs Other {.tabset}
+
+```{r}
+sccompResSub <- sccompRes[which(sccompRes$factor == "HighN1"),]
+sccompResSub <- as.data.frame(sccompResSub)
+rownames(sccompResSub) <- paste("New", sccompResSub$Niche)
+```
+
+#### Tables {.tabset}
+
+##### High N1 vs Other
+
+```{r}
+knitr::kable(sccompResSub[order(sccompResSub$c_FDR, decreasing = FALSE),], style = "html", row.names = TRUE) %>%
+    kable_styling(bootstrap_options = "striped") %>%
+    scroll_box(width = "100%", height = "400px")
+```
+
+#### Volcano plots {.tabset}
+
+##### High N1 vs Other
+
+```{r, fig.width = 8, fig.height = 5.5, eval = TRUE}
+seuratDF <- table(spe$TumorStage, spe$cn_celltypes) 
+# seuratDF <- table(speOnly2$stage, speOnly2$CeldaClusters2ndPass)
+seuratDF <- seuratDF %>% prop.table(1)
+seuratDF <- seuratDF[,order(colnames(seuratDF))]
+
+sccompResSub <- sccompRes[which(sccompRes$factor == "HighN1"),]
+sccompResSub <- as.data.frame(sccompResSub)
+rownames(sccompResSub) <- paste("Niche", sccompResSub$Niche)
+
+stageTableForFigure <- sccompResSub[!is.nan(sccompResSub$c_FDR),]
+stageTableForFigure$FDR <- stageTableForFigure$c_FDR
+stageTableForFigure$Estimates <- stageTableForFigure$c_effect
+stageTableForFigure$Cluster = paste("Niche", stageTableForFigure$Niche)
+
+stageTableForFigure$Significance <- sapply(stageTableForFigure$Cluster, function(x){
+    fdr = stageTableForFigure[which(stageTableForFigure$Cluster == x),"FDR"]
+    coefficient = stageTableForFigure[which(stageTableForFigure$Cluster == x),"Estimates"]
+    if(fdr < 0.05){
+        if(coefficient > 0){
+            return("Enriched, High Stage N1")
+        }else{
+            return("Enriched, Other")
+        }
+    }else{
+        return("Not significant")
+    }
+}) 
+stageTableForFigure$LogFDR <- -log(stageTableForFigure$FDR)
+
+numCells <- as.data.frame(table(paste0("Niche ",spe$Niche)))
+colnames(numCells) <- c("Cluster", "Number of cells (in LN)")
+
+stageTableForFigure <- merge(stageTableForFigure, numCells, by = "Cluster")
+
+# stageTableForFigure$LogFDR[which(stageTableForFigure$LogFDR > 15)] <- 15 #Adjust for plasma_0
+
+scatterLabels <- stageTableForFigure$Cluster
+scatterLabels[which(stageTableForFigure$FDR > 0.05)] <- ""
+
+# scatterLabelsAnnot <- sapply(scatterLabels, function(x){
+#     if(x == ""){
+#         return("")
+#     }else{
+#         clustNum = gsub("Cluster ", "", x)
+#         return(paste0(celdaClusterKeyTable$Annotation[which(celdaClusterKeyTable$ID == clustNum)],
+#                " (Cluster", clustNum, ")"))
+#     }
+# })
+
+pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20240120/AssociationAnalysis/20240410_stage_Enrichment_logit_5patients.pdf", width = 8, height = 5)
+ggplot(stageTableForFigure, aes(y=LogFDR, x=Estimates, color = Significance)) +
+  geom_point(aes(size = `Number of cells (in LN)`)) +
+  geom_text_repel(label=scatterLabels, show.legend=FALSE) + theme_classic()+ scale_color_manual(values=c("darkorange","dodgerblue","gray90")) + xlab("Coefficients, logit model") + xlim(c(-2, 2))+ theme(axis.text.x = element_text(size = 15), axis.text.y = element_text( size = 15), axis.title.x = element_text( size = 17), axis.title.y = element_text(size = 17), strip.text = element_text(size=15)) + ylab("-log(FDR)")
+```
+
+## Boxplots {.tabset}
+
+```{r,  results = "asis",  fig.width = 7, fig.height = 4}
+spe$SampleN1N2 <- paste0(spe$ln_id, 
+                              "_", spe$N1N2)
+seuratDF <- table(spe$SampleN1N2, spe$cn_celltypes) 
+# seuratDF <- table(speOnly4P$N1N2, speOnly4P$CellTypeAnnotation) 
+seuratDF <- seuratDF %>% prop.table(1)
+seuratDF <- seuratDF[,order(colnames(seuratDF))]
+
+seuratDF <- seuratDF %>% reshape2::melt()
+colnames(seuratDF) <- c("Sample", "Cluster", "Value")
+seuratDF$Patient <- gsub("-.*","",seuratDF$Sample)
+
+seuratDF$Cluster <- factor(seuratDF$Cluster)
+seuratDF$SampleType <- gsub(".*_","",seuratDF$Sample)
+
+seuratDF$SampleType <- factor(seuratDF$SampleType, levels = c("N1", "N2"))
+
+seuratDF$Stage <- sapply(seuratDF$Patient, function(x){
+    if(grepl("Patient19",x)){
+        return("High Stage")
+    }else if(grepl("Patient15",x)){
+        return("High Stage")
+    }else if(grepl("Patient13",x)){
+        return("High Stage")
+    }else if(grepl("Patient12",x)){
+        return("High Stage")
+    }else{
+        return("Low Stage")
+    }
+})
+
+sccompResSubSig = sccompResSub[which(sccompResSub$c_FDR < 0.05),]
+sccompResSubSig = sccompResSubSig[order(sccompResSubSig$c_effect),]
+sigClusts = c(sccompResSubSig$Niche, "12")
+
+# for(clust in sigClusts){
+for(clust in 1:50){
+     cat(space)
+  cat(sprintf(tab3, paste0(clust)))
+seuratDFSub <- seuratDF[seuratDF$Cluster == clust,]
+    seuratDFSub$Value = seuratDFSub$Value * 100
+    Patient = seuratDFSub$Patient
+    seuratDFSub$Stage <- factor(seuratDFSub$Stage, levels = c("Low Stage", "High Stage"))
+      print(ggplot(data=seuratDFSub, aes(x=Stage, y=Value)) + facet_wrap(~ SampleType, nrow = 1) +   geom_boxplot(outlier.shape = NA) + ggplot2::geom_jitter(aes(color = Patient), width = 0.1, size = 1.5)+ theme_classic()+ ylab("% within entire sample") + ggtitle(paste0("Niche ",clust)) + scale_y_continuous(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 45, hjust=1, size = 18), axis.text.y = element_text( size = 18), axis.title.x = element_text( size = 20), axis.title.y = element_text(size = 20), strip.text = element_text(size=25), plot.title = element_text(size = 20)) +
+  theme(plot.title = element_text(hjust = 0.5))  + scale_color_manual(values=rev(c("black","darkblue","blue","dodgerblue","seagreen","darkgreen","gold","green2","orange","red","pink")))) 
+  cat(space)
+}
+```
+
+
+
+
+```{r}
+sessionInfo()
+```
+

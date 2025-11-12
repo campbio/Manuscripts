@@ -1,0 +1,261 @@
+---
+title: "20230505_SampleMerging_Filtering_2ndPassClustering_Seurat_RNAOnly"
+author: "Yusuke Koga"
+date: "2023-05-05"
+output:
+ html_document:
+     toc: true
+     toc_float: true
+     number_sections: true
+     theme: cosmo
+     code_folding: hide
+---
+
+
+Batch correction: Not applied
+
+Neutrophils (Cells with low RNA library size and high CD16+ ADT): NOT included
+
+```{r}
+suppressPackageStartupMessages({
+    library(Seurat)
+    library(dplyr)
+    library(ggplot2)
+    library(DropletUtils)
+    library(singleCellTK)
+    library(celda)
+    library(grDevices)
+    library(pheatmap)
+    library(reshape2)
+    library(knitr)
+    library(harmony)
+    library(kableExtra)
+})
+
+
+# Define tab levels
+tab3 <- "### %s {-}
+"
+tab4 <- "#### %s {-}
+"
+tab5 <- "##### %s {-}
+"
+space <- "
+
+"
+
+
+```
+
+```{r}
+set.seed(12345)
+```
+
+
+```{r}
+batchcor <- "no_combatseq"
+sampleType <- "pDC"
+```
+
+```{r}
+allSampleObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/pDC/20230505_", batchcor,"_allSampleObj_PostSeurat_RNAClustering_pDC.rds"))
+```
+
+# 2nd-pass clustering to identify doublets/artifacts
+
+```{r, eval = FALSE}
+allSampleObj = NormalizeData(allSampleObj, verbose = FALSE) %>%
+  FindVariableFeatures(selection.method = 'vst', verbose = FALSE) %>%
+  ScaleData(verbose = FALSE) %>%
+  RunPCA(verbose = FALSE) 
+
+allSampleObj<- FindNeighbors(allSampleObj, dims = 1:30, verbose = FALSE, reduction = "pca")
+allSampleObj <- FindClusters(allSampleObj, resolution = 1.5, verbose = FALSE)
+allSampleObj <- RunUMAP(allSampleObj, reduction = "pca", dims=1:30, verbose = FALSE)
+
+
+allSampleObj[["RNACluster_pDC2ndPass"]] <- Idents(allSampleObj)
+
+allSampleObj$Lymph_Tumor_Normal <- gsub("_.*","",allSampleObj$HashedInfo)
+allSampleObj$SampleInfo[which(allSampleObj$Batch == "BUMC_LR_014_T")] <- "Patient14_Tumor"
+allSampleObj$Lymph_Tumor_Normal[which(allSampleObj$Batch == "BUMC_LR_014_T")] <- "Tumor"
+
+saveRDS(allSampleObj, paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/",sampleType,"/20230505_2ndPass_RNAOnly_SeuratClustering_",sampleType,".rds"))
+```
+
+
+```{r}
+allSampleObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/2ndPass/",sampleType,"/20230505_2ndPass_RNAOnly_SeuratClustering_",sampleType,".rds"))
+```
+
+## UMAPs {.tabset}
+
+### Seurat Cluster
+
+```{r}
+DimPlot(allSampleObj, label = TRUE)
+```
+
+### Doublet annotation
+
+```{r}
+DimPlot(allSampleObj, group.by = "ConsensusDoublet")
+```
+
+### Ambient RNA contamination
+
+```{r}
+# DimPlot(allSampleObj, group.by = "DecontXContamination")
+```
+
+
+### Batch
+
+```{r}
+DimPlot(allSampleObj, group.by = "Batch")
+```
+
+
+### Empty droplet
+
+```{r, fig.width = 10, fig.height = 8, eval = TRUE}
+DimPlot(allSampleObj, group.by = "EmptyDroplet")
+```
+
+### Lymph/Tumor/Normal
+
+```{r}
+allSampleObj$Lymph_Tumor_Normal <- gsub("_.*","",allSampleObj$HashedInfo)
+DimPlot(allSampleObj, group.by = "Lymph_Tumor_Normal")
+```
+
+
+## Violin Plots {.tabset}
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "CD3D")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "CD4")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "CD8A")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "FOXP3")
+```
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "NCAM1")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "FCGR3A")
+```
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "IL7R")
+```
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "FCER1A")
+```
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "CD14")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "EPCAM")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "APOE")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "CD19")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "MS4A1")
+```
+
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "MZB1")
+```
+
+```{r, fig.width = 10, fig.height = 3}
+VlnPlot(allSampleObj, "MKI67")
+```
+
+```{r}
+# 
+# # dfExprs <- Seurat::FetchData(object = allSampleObj, assay = "CITE", c("CD45RO","CD45RA","CD3"))
+# DefaultAssay(allSampleObj) <- "RNA"
+# dfExprsRNA <- Seurat::FetchData(object = allSampleObj, assay = "RNA", c("CD3D","CD4","CD8A"))
+# # dfExprs <- cbind(dfExprs, dfExprsRNA)
+# dfExprs <- dfExprsRNA
+# dfExprs$Cluster <- allSampleObj$RNACluster_pDC2ndPass
+# 
+# # Group by mean using dplyr
+# # dfAve1 <- dfExprs %>% group_by(Cluster) %>%
+# #   summarise(avg_exprs=mean(CD45RO),
+# #             .groups = 'drop')
+# # dfAve2 <- dfExprs %>% group_by(Cluster) %>%
+# #   summarise(avg_exprs=mean(CD45RA),
+# #             .groups = 'drop')
+# dfAve3 <- dfExprs %>% group_by(Cluster) %>%
+#   summarise(avg_exprs=mean(CD3D),
+#             .groups = 'drop')
+# dfAve4 <- dfExprs %>% group_by(Cluster) %>%
+#   summarise(avg_exprs=mean(CD4),
+#             .groups = 'drop')
+# dfAve4$CD4Z <- scale(dfAve4$avg_exprs)[,1]
+# dfAve5 <- dfExprs %>% group_by(Cluster) %>%
+#   summarise(avg_exprs=mean(CD8A),
+#             .groups = 'drop')
+# dfAve4$CD8Z <- scale(dfAve5$avg_exprs)[,1]
+# 
+# TcellLabel <- sapply(1:nrow(dfAve4), function(x){
+#     if(dfAve4[x,"CD4Z"] > 0){
+#         return("CD4")
+#     }else if(dfAve4[x,"CD8Z"] > 0){
+#         return("CD8")
+#     }else{
+#         return("other")
+#     }
+# })
+# 
+# plot(dfAve4$CD4Z, dfAve4$CD8Z, pch = 3)
+# text(dfAve4$CD4Z, dfAve4$CD8Z, labels = dfAve4$Cluster)
+# 
+# ggDFAve <- cbind(dfAve1$avg_exprs[which(dfAve3$avg_exprs > 0.4)], dfAve2$avg_exprs[which(dfAve3$avg_exprs > 0.4)])
+# ggDFAve <- as.data.frame(ggDFAve)
+# ggDFAve$Type <- TcellLabel[which(dfAve3$avg_exprs > 0.4)]
+# rownames(ggDFAve) <- paste("Cluster",dfAve1$Cluster[which(dfAve3$avg_exprs > 0.4)])
+# colnames(ggDFAve) <- c("CD45RO", "CD45RA","Type")
+```
+
+# Subset data
+
+Will not subset any of the clusters.
+
+```{r}
+saveRDS(allSampleObj, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/3rdPass/pDC/20230505_3rdPass_RNAOnly_SeuratClustering_pDC_PostFilter.rds")
+
+```
+
+
