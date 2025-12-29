@@ -1,0 +1,407 @@
+---
+title: "Step 1. Preprocessing and quality control of CITE-seq data"
+author: "Yusuke Koga"
+date: "2025-03-20"
+output: html_document
+---
+
+```{r}
+suppressPackageStartupMessages({
+    library(imcRtools)
+    library(dittoSeq)
+    library(cytomapper)
+    library(tidyverse)
+    library(viridis)
+    library(RColorBrewer)
+    library(Rphenograph)
+    library(gridExtra)
+    library(viridis)
+    library(BiocSingular)
+    library(cowplot)
+    library(scater)
+    library(patchwork)
+    library(Seurat)
+    library(scales)
+    library(celda)
+    library(singleCellTK)
+    library(sva)
+    library(pheatmap)
+    library(ggrepel)
+    library(scran)
+    library(reshape)
+    library(data.table)
+    library(monocle3)
+    library(sccomp)
+    library(knitr)
+    library(kableExtra)
+    library(DescTools)
+})
+
+set.seed(12345)
+
+# Define tab levels
+tab2 <- "## %s {-}
+"
+tab3 <- "### %s {-}
+"
+tab4 <- "#### %s {-}
+"
+tab5 <- "##### %s {-}
+"
+
+space <- "
+
+"
+```
+
+# Step 1-1. Run CellRanger to align sequencing reads and generating expression counts
+
+* This is done using a bash script for multithreading (/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Alignment/Scripts/XiC_2022-1123_CellRanger.sh)
+
+* The output was deposited in /restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Alignment/20221122_NewAlignment.
+
+# Step 1-2. Run a pipeline script for QC and decontamination
+* Steps 1-2 was run using a pipeline script that was submitted as a batch job: /restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/Scripts/20230211_Demux_Decon_QC/20230211_decon_demux.sh, which calls /restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/Scripts/20230131_PeanutX_DecontX_HTODemux_QC.R
+
+```{r}
+##### Below code was run per multiplexed sample #####
+# For purposes of this code, we will set filename as ""
+filename <- "BUMC_LR_019_L"
+datadir <- "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Data/Alignment/20221122_NewAlignment/"
+outputdir <- "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/20230211_Post_Demux_Decon_QC/"
+
+## Step 1-2-1: Read in CellRanger output
+
+## List of sample and corresponding HTO used for hashtagging
+htoList = list("BUMC_LR_003_L"= c("ADT6-TotalSeqC", "ADT7-TotalSeqC",
+                                  "ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_003_T"= c("Tumor"),
+               "BUMC_LR_005_TL"= c("ADT6-TotalSeqC", "ADT7-TotalSeqC",
+                                   "ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_006_T"= c("Tumor"),
+               "BUMC_LR_006_L"= c("ADT6-TotalSeqC", "ADT7-TotalSeqC",
+                                  "ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_008_TA"= c("Tumor"),
+               "BUMC_LR_008_L"= c("ADT6-TotalSeqC", "ADT7-TotalSeqC",
+                                   "ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_009_TL"= c("ADT6-TotalSeqC", "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_010_TL"= c("ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_013_T"= c("Tumor"),
+               "BUMC_LR_012_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_012_TL"= c("ADT9-TotalSeqC","ADT10-TotalSeqC"),
+               "BUMC_LR_014_L" = c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                   "ADT7-TotalSeqC", "ADT8-TotalSeqC",
+                                   "ADT9-TotalSeqC", "ADT10-TotalSeqC"),
+               "BUMC_LR_014_T" = c("Tumor"),
+               "BUMC_LR_015_L"= c("ADT7-TotalSeqC","ADT8-TotalSeqC", "ADT9-TotalSeqC"),
+               "BUMC_LR_015_T"= c("Tumor"),
+               "BUMC_LR_016_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_016_T"= c("Tumor"),
+               "BUMC_LR_017_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC"),
+               "BUMC_LR_017_T"= c("Tumor"),
+               "BUMC_LR_018_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_018_T"= c("ADT9-TotalSeqC", "ADT10-TotalSeqC"),
+               "BUMC_LR_019_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_019_T"= c("ADT9-TotalSeqC", "ADT10-TotalSeqC"),
+               "BUMC_LR_020_L"= c("ADT5-TotalSeqC", "ADT6-TotalSeqC",
+                                  "ADT7-TotalSeqC", "ADT8-TotalSeqC"),
+               "BUMC_LR_020_T"= c("ADT9-TotalSeqC", "ADT10-TotalSeqC"))
+
+
+#Samples where CITEseq/TotalSeq not applied
+noCITEseq = c("BUMC_LR_005_TL", "BUMC_LR_006_T", "BUMC_LR_006_L", "BUMC_LR_008_TA",
+              "BUMC_LR_008_T", "BUMC_LR_008_L", "BUMC_LR_009_TL")
+
+htos = htoList[[filename]]
+
+htos = gsub("-TotalSeqC", "", htos)
+batch = paste0("Patient", gsub("BUMC_LR_0","",filename))
+patient = gsub("_.*","",batch)
+# read raw data using the Seurat function "Read10X"
+
+filtData <- Read10X(paste0(datadir, filename, "/outs/filtered_feature_bc_matrix/"))
+gex_filtered <- SingleCellExperiment(list(counts = filtData[["Gene Expression"]]))
+adt_filtered <- SingleCellExperiment(list(counts = filtData[["Antibody Capture"]]))
+
+rawData <- Read10X(paste0(datadir, filename, "/outs/raw_feature_bc_matrix/"))
+gex_raw <- SingleCellExperiment(list(counts = rawData[["Gene Expression"]]))
+adt_raw <- SingleCellExperiment(list(counts = rawData[["Antibody Capture"]]))
+
+gex_filtered$EmptyDroplet <- "Cell"
+adt_filtered$EmptyDroplet <- "Cell"
+
+
+## Step 1-2-2: Identify low-transcript populations that are likely to be neutrophils
+if(!(filename %in% noCITEseq)){
+    #Compare total RNA and ADT library size
+    cellIx <- ifelse(colnames(adt_raw) %in% colnames(adt_filtered), "Cell", "Droplet")
+
+    dfExprs = data.frame(RNAExp = log2(colSums(counts(gex_raw)) + 1),
+                         ADTExp = log2(colSums(counts(adt_raw)) + 1),
+                         Cell = cellIx,
+                         CD16ADT = log2(counts(adt_raw)["CD16_TotalSeqC",] + 1))
+
+
+    p1 <- ggplot(dfExprs, aes(x = RNAExp, y = ADTExp, color = Cell)) + geom_point() +
+        theme_classic() + ggtitle("Empty Droplet Call, 10X")
+
+    png(paste0(outputdir,"/",filename,"_RNA_ADT_Library.png"))
+    print(p1)
+    dev.off()
+
+    neutrophilThres <- max(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1)) / 2
+    adtTotalThres <- sd(log2(colSums(counts(adt_raw)) + 1)) * 2 +  mean(log2(colSums(counts(adt_raw)) + 1))
+    # sd(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1)) * 4 +  mean(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1))
+    # sd(log2(colSums(counts(adt_raw)) + 1)) * 2 +  mean(log2(colSums(counts(adt_raw)) + 1))
+
+    p2 <- ggplot(dfExprs, aes(x = RNAExp, y = ADTExp, color = CD16ADT)) + geom_point() +
+        scale_colour_gradient2(low = "black", mid = "darkblue", high = "green") +
+        theme_classic() + ggtitle("CD16 ADT Expression") +
+        geom_hline(yintercept=adtTotalThres, linetype="dashed", color = "red")
+
+    png(paste0(outputdir,"/",filename,"_ADT_CD16_Library.png"))
+    print(p2)
+    dev.off()
+
+    neutrophil.ix <- intersect(intersect(intersect(which(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1) > neutrophilThres),
+                               which(log2(colSums(counts(adt_raw)) + 1) > adtTotalThres)),
+                               which(log2(colSums(counts(gex_raw)) + 1) > 5)),
+                               which(cellIx == "Droplet"))
+    gex_neutrophil <- gex_raw[,neutrophil.ix]
+    adt_neutrophil <- adt_raw[,neutrophil.ix]
+    gex_neutrophil$EmptyDroplet <- "EmptyDroplet"
+    adt_neutrophil$EmptyDroplet <- "EmptyDroplet"
+
+    gex_filtered <- cbind(gex_filtered, gex_neutrophil)
+    adt_filtered <- cbind(adt_filtered, adt_neutrophil)
+}
+
+
+if(!(filename %in% noCITEseq)){
+    #Compare total RNA and ADT library size
+    cellIx <- ifelse(colnames(adt_raw) %in% colnames(adt_filtered), "Cell", "Droplet")
+
+    dfExprs = data.frame(RNAExp = log2(colSums(counts(gex_raw)) + 1),
+                         ADTExp = log2(colSums(counts(adt_raw)) + 1),
+                         Cell = cellIx,
+                         CD16ADT = log2(counts(adt_raw)["CD16_TotalSeqC",] + 1))
+
+
+    p1 <- ggplot(dfExprs, aes(x = RNAExp, y = ADTExp, color = Cell)) + geom_point() +
+        theme_classic() + ggtitle("Empty Droplet Call, 10X")
+    print(p1)
+
+    neutrophilThres <- max(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1)) / 2
+    adtTotalThres <- sd(log2(colSums(counts(adt_raw)) + 1)) * 2 +  mean(log2(colSums(counts(adt_raw)) + 1))
+
+    p2 <- ggplot(dfExprs, aes(x = RNAExp, y = ADTExp, color = CD16ADT)) + geom_point() +
+        scale_colour_gradient2(low = "black", mid = "darkblue", high = "green") +
+        theme_classic() + ggtitle("CD16 ADT Expression") +
+        geom_hline(yintercept=adtTotalThres, linetype="dashed", color = "red")
+    print(p2)
+
+
+    neutrophil.ix <- intersect(intersect(intersect(which(log2(counts(adt_raw)["CD16_TotalSeqC",] + 1) > neutrophilThres),
+                               which(log2(colSums(counts(adt_raw)) + 1) > adtTotalThres)),
+                               which(log2(colSums(counts(gex_raw)) + 1) > 5)),
+                               which(cellIx == "Droplet"))
+    gex_neutrophil <- gex_raw[,neutrophil.ix]
+    adt_neutrophil <- adt_raw[,neutrophil.ix]
+    gex_neutrophil$EmptyDroplet <- "EmptyDroplet"
+    adt_neutrophil$EmptyDroplet <- "EmptyDroplet"
+
+    gex_filtered <- cbind(gex_filtered, gex_neutrophil)
+    adt_filtered <- cbind(adt_filtered, adt_neutrophil)
+}
+    
+
+## Step 1-2-3: Apply decontX for decontamination of RNA expression
+cell.rna.raw <- as.matrix(counts(gex_filtered))
+
+## Check to see if all barcodes have expression data
+if(!all((colSums(cell.rna.raw) > 0))){
+    adt_filtered <- adt_filtered[,which(colSums(cell.rna.raw) > 0)]
+    gex_filtered <- gex_filtered[,which(colSums(cell.rna.raw) > 0)]
+    cell.rna.raw <- as.matrix(counts(gex_filtered))
+}
+
+cell.rna.decont = celda::decontX(cell.rna.raw, background = counts(gex_raw), verbose = FALSE)
+
+## Add batch info to cell barcode
+colnames(cell.rna.raw) <- paste0(batch,"_",colnames(cell.rna.raw))
+colnames(cell.rna.decont$decontXcounts) <- paste0(batch,"_",colnames(cell.rna.decont$decontXcounts))
+
+## Create Seurat object, note: min.cells is a gene filter, not a cell filter
+seuratObj = Seurat::CreateSeuratObject(counts = cell.rna.decont$decontXcounts,
+                                       assay = "RNA",
+                                       min.cells = 20)
+
+seuratObj[["Nondecon_RNA"]] = Seurat::CreateAssayObject(data = cell.rna.raw)
+
+## Remove the "_TotalSeqC" suffix
+rownames(adt_filtered) = gsub("_TotalSeqC","",rownames(adt_filtered))
+cell.adt.filtered.nodecon <- as.matrix(counts(adt_filtered))
+colnames(cell.adt.filtered.nodecon) <- paste0(batch,"_",colnames(cell.adt.filtered.nodecon))
+seuratObj[["Nondecon_CITE"]] = Seurat::CreateAssayObject(data = cell.adt.filtered.nodecon)
+```
+
+
+# Step 2-1. 1st-pass clustering
+
+```{r}
+batchcor <- "no_harmony"
+neutrophil <- "with_emptydrops"
+```
+
+
+
+```{r, eval = FALSE}
+# Step 1. Load all samples, merging all samples as single object
+postdeconDataDir = "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/"
+allRdsObj <- list.files(path = postdeconDataDir , pattern = "*x.rds")
+
+for(x in 1:length(allRdsObj)){
+   obj <- allRdsObj[x]
+   if(x > 1){
+       tempObj <- readRDS(paste0(postdeconDataDir, obj))
+       allSampleObj <- merge(allSampleObj, tempObj)
+   }else{
+       allSampleObj <- readRDS(paste0(postdeconDataDir, obj))
+   }
+}
+
+# citeCounts <- GetAssayData(allSampleObj, assay = "CITE")
+# citeCounts <- citeCounts[-grep("ADT",rownames(GetAssayData(allSampleObj, assay = "CITE"))),]
+# allSampleObj[["CITE"]] <- CreateAssayObject(citeCounts)
+
+# saveRDS(allSampleObj, "/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/NeutrophilIdentification/20230220_no_combatseq_with_emptydrops_allSampleObj_PostDoubletDetection.rds")
+```
+
+
+```{r, eval = FALSE}
+allSampleObj <- readRDS(paste0("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/Clustering/20230505/NeutrophilIdentification/20230220_no_combatseq_with_emptydrops_allSampleObj_PostDoubletDetection.rds"))
+```
+
+```{r, eval = FALSE}
+DefaultAssay(allSampleObj) = "RNA"
+
+allSampleObj[["percent.mt"]] <-  PercentageFeatureSet(allSampleObj, pattern = "^MT-")
+allSampleObj[["percent.xist"]] <-  PercentageFeatureSet(allSampleObj, pattern = "XIST")
+allSampleObj[["percent.malat"]] <-  PercentageFeatureSet(allSampleObj, pattern = "MALAT")
+
+allSampleObj[["CITE_Total"]] <- colSums(GetAssayData(allSampleObj, assay = "CITE"))
+allSampleObj[["CITE_Features"]] <- colSums(GetAssayData(allSampleObj, assay = "CITE") > 0)
+
+#Subset by demultiplex result
+## Setting all samples with out HTO classifications (i.e. tumor samples that were not hashed) as singlet
+allSampleObj$HTO_classification.global[which(is.na(allSampleObj$HTO_classification.global))] <- "Singlet"
+```
+
+```{r}
+#QC Figure:
+
+ggtable <- as.data.frame(as.matrix(table(allSampleObj$Batch)))
+
+htoDemuxTable <- as.data.frame(as.matrix(table(allSampleObj$Batch,allSampleObj$HTO_classification.global == "Singlet"))[,"TRUE"])
+ggtable$PostDemux <- htoDemuxTable[,1]
+
+passDemux <- colnames(allSampleObj)[which(allSampleObj$HTO_classification.global == "Singlet")]
+passCITE <- colnames(allSampleObj)[which(allSampleObj$CITE_Features > 50)]
+passMT <- colnames(allSampleObj)[which(allSampleObj$percent.mt < 15)]
+passDecont <- colnames(allSampleObj)[which(allSampleObj$DecontXContamination < 0.9)]
+
+# passDemux <- colnames(allSampleObj)[which(allSampleObj$HTO_classification.global == "Singlet")]
+# passCITE <- colnames(allSampleObj)[which(allSampleObj$CITE_Features > 20)]
+# passMT <- colnames(allSampleObj)[which(allSampleObj$percent.mt < 25)]
+# passDecont <- colnames(allSampleObj)[which(allSampleObj$DecontXContamination < 0.9)]
+
+passAll <- intersect(intersect(intersect(passDemux, passCITE),passMT),passDecont)
+
+passAllPatient <- gsub("_TL_.*","_TL", passAll)
+passAllPatient <- gsub("_T_.*","_T", passAllPatient)
+passAllPatient <- gsub("_L.*","_L", passAllPatient)
+
+passQCTable <- as.data.frame(as.matrix(table(passAllPatient)))
+colnames(passQCTable) <- "QC"
+rownames(passQCTable) <- gsub("Patient","BUMC_LR_0",rownames(passQCTable))
+
+
+#Filter to only patients 10-20
+passQCTable <- passQCTable[-1,]
+ggtable <- ggtable[8:25,]
+ggtable <- cbind(ggtable, passQCTable)
+ggtable$Sample <- c("Patient10, Tumor+LN",
+                    "Patient12, LN", "Patient12, Tumor",
+                    "Patient13, Tumor",
+                    "Patient14, LN", "Patient14, Tumor",
+                    "Patient15, LN", "Patient15, Tumor",
+                    "Patient16, LN", "Patient16, Tumor",
+                    "Patient17, LN", "Patient17, Tumor",
+                    "Patient18, LN", "Patient18, Tumor+Normal",
+                    "Patient19, LN", "Patient19, Tumor+Normal",
+                    "Patient20, LN", "Patient20, Tumor+Normal")
+
+colnames(ggtable)[1] <- "Non-droplets, Generated via CellRanger"
+colnames(ggtable)[2] <- "Recovered from HTODemux, PeanutX"
+colnames(ggtable)[3] <- "Post-QC"
+
+
+ggtableM <- reshape2::melt(ggtable, id.vars = "Sample")
+colnames(ggtableM) <- c("Sample", "Step", "Cells")
+
+ggtableM$Sample <- factor(ggtableM$Sample, levels = unique(ggtableM$Sample))
+```
+
+
+```{r, fig.width = 11, fig.height = 5}
+p <- ggplot(data = ggtableM, aes(x = Sample, y = Cells, fill = Step)) + geom_bar(stat="identity", color="black", position=position_dodge())+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ scale_fill_manual(values=c("red","green4", "darkblue"))
+# pdf("/restricted/projectnb/camplab/projects/20220504_Suzuki_LN/Analysis/QC/QC_Data/Post_Demux_Decon_QC/temp.pdf", width = 11, height = 5)
+p
+# dev.off()
+```
+
+```{r, fig.width = 20, fig.height = 6}
+allSampleObj = NormalizeData(allSampleObj, verbose = FALSE) %>%
+  FindVariableFeatures(selection.method = 'vst', verbose = FALSE) %>%
+  ScaleData(verbose = FALSE)
+allSampleObj$Sample_HTODemux <- paste0(allSampleObj$Batch, ", ", allSampleObj$HTO_classification.global)
+VlnPlot(allSampleObj, features = "ITGAX",
+        assay = "RNA", group.by = "Sample_HTODemux", ) + NoLegend() + xlab("HTODemux Label Per Sample") + ggtitle("ITGAX(CD11c), RNA Expression")
+```
+
+```{r, fig.width = 15, fig.height = 5}
+# allSampleObjUsed <- subset(allSampleObj, subset = Patient %in% paste0("Patient", 10:20))
+
+allSampleObjUsed <- subset(allSampleObjUsed, subset = HTO_classification.global == "Singlet")
+
+cd14Exprs = FetchData(allSampleObjUsed, vars = "CD14")
+cd14Exprs$Threshold <- ifelse(cd14Exprs$CD14 > 0, "Above Threshold", "Below Threshold")
+cd14Exprs$Sample <- gsub("_TL_.*","_TL", rownames(cd14Exprs))
+cd14Exprs$Sample <- gsub("_T_.*","_T", cd14Exprs$Sample)
+cd14Exprs$Sample <- gsub("_L.*","_L", cd14Exprs$Sample)
+
+cd14PropTable <- table(cd14Exprs$Threshold, cd14Exprs$Sample) %>% prop.table(2)
+cd14ThresTable <- data.frame(Sample = colnames(cd14PropTable),
+                             Proportion = cd14PropTable[1,])
+cd14ThresTable$SampleType <- sapply(cd14ThresTable$Sample, function(x){
+    if(grepl("_TL", x)){
+        return("Tumor+LN")
+    }else if(grepl("_L", x)){
+        return("LN")
+    }else if(grepl("_T", x)){
+        return("Tumor")
+    }
+})
+cd14ThresTable$Patient <- gsub("_.*", "", cd14ThresTable$Sample)
+
+ggplot(data = cd14ThresTable, aes(x = Patient, y = Proportion, fill = SampleType)) + geom_bar(stat="identity", color="black", position=position_dodge(preserve = "single"))+
+    theme_classic() + theme(axis.text.x = element_text(angle = 45, vjust = 1,size = 12, hjust=1), axis.text.y = element_text(size = 14))+ scale_y_continuous(expand = c(0, 0))+ scale_fill_manual(values=c("darkgreen", "orange", "purple1")) + ylab("Proportion of cells with CD14 expression (> 0)")
+```
+
+

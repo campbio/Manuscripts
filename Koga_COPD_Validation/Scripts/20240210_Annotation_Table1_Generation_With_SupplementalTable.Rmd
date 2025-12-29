@@ -1,0 +1,283 @@
+---
+title: "Table1_Generation"
+author: "Yusuke Koga"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+geometry: margin=1in
+---
+
+# Bronchial Brushings
+
+```{r, warning=FALSE}
+# Take annotation information and create table
+annotBronch <- read_excel("/restricted/projectnb/camplab/home/ykoga07/DECAMP/Novartis/Analysis/2023_Reboot/Publication/Scripts/20240217_SupplementalTable_Draft1.xlsx", sheet = "4. DECAMP2 Bronch Cohort", skip = 1)
+```
+
+## Create annotation table
+
+```{r}
+# Gender
+genderVector <- c("", 
+                  paste0(sum(annotBronch$Gender == "Female Gender"),
+                         " (",
+                         signif(sum(annotBronch$Gender == "Female Gender")/length(annotBronch$Gender) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotBronch$Gender == "Male Gender"),
+                         " (",
+                         signif(sum(annotBronch$Gender == "Male Gender")/length(annotBronch$Gender) * 100, 3),
+                         "%)"))
+
+# Age
+ageVector <- c("", 
+               paste0(sprintf('%#.3g', mean(annotBronch$Age)),
+                         " (",
+                         sprintf('%#.3g', sd(annotBronch$Age)),
+                         ")"),
+               paste0(sprintf('%#.3g', median(annotBronch$Age)),
+                      " [",
+                      sprintf('%#.3g', min(annotBronch$Age)),
+                      ", ",
+                      sprintf('%#.3g', max(annotBronch$Age)),
+                      "]")
+               )
+
+# Smoking status
+smkVector <- c("", 
+                  paste0(sum(annotBronch$`Smoking Status` == "Former Smoker"),
+                         " (",
+                         signif(sum(annotBronch$`Smoking Status` == "Former Smoker")/length(annotBronch$`Smoking Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotBronch$`Smoking Status` == "Current Smoker"),
+                         " (",
+                         signif(sum(annotBronch$`Smoking Status` == "Current Smoker")/length(annotBronch$`Smoking Status`) * 100, 3),
+                         "%)"))
+
+
+# COPD Status
+copdVector <- c("", 
+                  paste0(sum(annotBronch$`COPD Status` == "COPD"),
+                         " (",
+                         signif(sum(annotBronch$`COPD Status` == "COPD")/length(annotBronch$`COPD Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotBronch$`COPD Status` == "NO_COPD"),
+                         " (",
+                         signif(sum(annotBronch$`COPD Status` == "NO_COPD")/length(annotBronch$`COPD Status`) * 100, 3),
+                         "%)"))
+
+
+# COPD Status
+copdVector <- c("", 
+                  paste0(sum(annotBronch$`COPD Status` == "COPD"),
+                         " (",
+                         signif(sum(annotBronch$`COPD Status` == "COPD")/length(annotBronch$`COPD Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotBronch$`COPD Status` == "No COPD"),
+                         " (",
+                         signif(sum(annotBronch$`COPD Status` == "No COPD")/length(annotBronch$`COPD Status`) * 100, 3),
+                         "%)"))
+
+
+# Baseline FEV1
+baselinefev1Vector <- c("", 
+               paste0(sprintf('%#.3g', mean(annotBronch$`Baseline FEV1`)),
+                         " (",
+                         sprintf('%#.3g', sd(annotBronch$`Baseline FEV1`)),
+                         ")"),
+               paste0(sprintf('%#.3g', median(annotBronch$`Baseline FEV1`)),
+                      " [",
+                      sprintf('%#.3g', min(annotBronch$`Baseline FEV1`)),
+                      ", ",
+                      sprintf('%#.3g', max(annotBronch$`Baseline FEV1`)),
+                      "]")
+               )
+
+
+# FEV1 Decline Rate
+deltafev1Vector <- c("", 
+               paste0(sprintf('%#.2g', mean(annotBronch$ΔFEV1)),
+                         " (",
+                         sprintf('%#.2g', sd(annotBronch$ΔFEV1)),
+                         ")"),
+               paste0(sprintf('%#.2g', median(annotBronch$ΔFEV1)),
+                      " [",
+                      sprintf('%#.2g', min(annotBronch$ΔFEV1)),
+                      ", ",
+                      sprintf('%#.2g', max(annotBronch$ΔFEV1)),
+                      "]")
+               )
+
+# Measurements
+measurementVector <- c("",  paste0(sprintf('%#.2g', mean(annotBronch$`PFT Measurements`)),
+                         " (",
+                         sprintf('%#.2g', sd(annotBronch$`PFT Measurements`)),
+                         ")"))
+
+bronchTable1Vector <- c(genderVector, ageVector,
+                       smkVector, copdVector,
+                       baselinefev1Vector, deltafev1Vector, measurementVector)
+
+bronchTable1Vector
+
+
+annotBronchUse <- annotBronch
+```
+
+
+
+
+# Nasal Brushings
+
+```{r, warning=FALSE}
+# Take annotation information and create table
+annotNasal <- read_excel("/restricted/projectnb/camplab/home/ykoga07/DECAMP/Novartis/Analysis/2023_Reboot/Publication/Scripts/20240217_SupplementalTable_Draft1.xlsx", sheet = "5. DECAMP2 Nasal Cohort", skip = 1)
+```
+
+## Create annotation table
+
+```{r}
+# Gender
+genderVector <- c("", 
+                  paste0(sum(annotNasal$Gender == "Female Gender"),
+                         " (",
+                         signif(sum(annotNasal$Gender == "Female Gender")/length(annotNasal$Gender) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotNasal$Gender == "Male Gender"),
+                         " (",
+                         signif(sum(annotNasal$Gender == "Male Gender")/length(annotNasal$Gender) * 100, 3),
+                         "%)"))
+
+# Age
+ageVector <- c("", 
+               paste0(sprintf('%#.3g', mean(annotNasal$Age)),
+                         " (",
+                         sprintf('%#.3g', sd(annotNasal$Age)),
+                         ")"),
+               paste0(sprintf('%#.3g', median(annotNasal$Age)),
+                      " [",
+                      sprintf('%#.3g', min(annotNasal$Age)),
+                      ", ",
+                      sprintf('%#.3g', max(annotNasal$Age)),
+                      "]")
+               )
+
+# Smoking status
+smkVector <- c("", 
+                  paste0(sum(annotNasal$`Smoking Status` == "Former Smoker"),
+                         " (",
+                         signif(sum(annotNasal$`Smoking Status` == "Former Smoker")/length(annotNasal$`Smoking Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotNasal$`Smoking Status` == "Current Smoker"),
+                         " (",
+                         signif(sum(annotNasal$`Smoking Status` == "Current Smoker")/length(annotNasal$`Smoking Status`) * 100, 3),
+                         "%)"))
+
+
+# COPD Status
+copdVector <- c("", 
+                  paste0(sum(annotNasal$`COPD Status` == "COPD"),
+                         " (",
+                         signif(sum(annotNasal$`COPD Status` == "COPD")/length(annotNasal$`COPD Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotNasal$`COPD Status` == "NO_COPD"),
+                         " (",
+                         signif(sum(annotNasal$`COPD Status` == "NO_COPD")/length(annotNasal$`COPD Status`) * 100, 3),
+                         "%)"))
+
+
+# COPD Status
+copdVector <- c("", 
+                  paste0(sum(annotNasal$`COPD Status` == "COPD"),
+                         " (",
+                         signif(sum(annotNasal$`COPD Status` == "COPD")/length(annotNasal$`COPD Status`) * 100, 3),
+                         "%)"),
+                  paste0(sum(annotNasal$`COPD Status` == "No COPD"),
+                         " (",
+                         signif(sum(annotNasal$`COPD Status` == "No COPD")/length(annotNasal$`COPD Status`) * 100, 3),
+                         "%)"))
+
+
+# Baseline FEV1
+baselinefev1Vector <- c("", 
+               paste0(sprintf('%#.3g', mean(annotNasal$`Baseline FEV1`)),
+                         " (",
+                         sprintf('%#.3g', sd(annotNasal$`Baseline FEV1`)),
+                         ")"),
+               paste0(sprintf('%#.3g', median(annotNasal$`Baseline FEV1`)),
+                      " [",
+                      sprintf('%#.3g', min(annotNasal$`Baseline FEV1`)),
+                      ", ",
+                      sprintf('%#.3g', max(annotNasal$`Baseline FEV1`)),
+                      "]")
+               )
+
+
+# FEV1 Decline Rate
+deltafev1Vector <- c("", 
+               paste0(sprintf('%#.2g', mean(annotNasal$ΔFEV1)),
+                         " (",
+                         sprintf('%#.2g', sd(annotNasal$ΔFEV1)),
+                         ")"),
+               paste0(sprintf('%#.2g', median(annotNasal$ΔFEV1)),
+                      " [",
+                      sprintf('%#.2g', min(annotNasal$ΔFEV1)),
+                      ", ",
+                      sprintf('%#.2g', max(annotNasal$ΔFEV1)),
+                      "]")
+               )
+
+# Measurements
+measurementVector <- c("",  paste0(sprintf('%#.2g', mean(annotNasal$`PFT Measurements`)),
+                         " (",
+                         sprintf('%#.2g', sd(annotNasal$`PFT Measurements`)),
+                         ")"))
+
+nasalTable1Vector <- c(genderVector, ageVector,
+                       smkVector, copdVector,
+                       baselinefev1Vector, deltafev1Vector, measurementVector)
+
+annotTable1NamesVector <- c("Sex",
+                           "Female",
+                           "Male",
+                           "Age",
+                           "Mean (SD)",
+                           "Median [Min, Max]",
+                           "Smoking Status",
+                           "Former",
+                           "Current",
+                           "COPD",
+                           "COPD (FEV1/FVC < 0.7)",
+                           "No COPD ",
+                           "Baseline FEV1",
+                           "Mean (SD)",
+                           "Median [Min, Max]",
+                           paste0("FEV1 Decline Rate (","\u394","FEV1, L/yr)"),
+                           "Mean (SD)",
+                           "Median [Min, Max]",
+                           paste0("Follow-up time (yrs)", "Mean (SD)"))
+
+
+```
+
+
+```{r, warning = FALSE, message = FALSE}
+
+table1 <- (cbind(cbind(annotTable1NamesVector,bronchTable1Vector), nasalTable1Vector))
+colnames(table1) <- c("","Bronchial Brushings (n = 158)", "Nasal Brushings (n = 99)")
+
+table1 %>%
+  knitr::kable(
+    format = "html", align = c("l", "c", "c"),
+    row.names = FALSE
+  ) %>%
+  add_indent(which(table1[,2] != "")) %>%
+  kableExtra::kable_styling(html_font = "Arial", row_label_position = l)
+
+# write.table(table1, sep = "\t", file = "/restricted/projectnb/camplab/home/ykoga07/DECAMP/Novartis/Analysis/2023_Reboot/Publication/Scripts/20240210_Annotation_Table1_Draft1.txt", row.names = FALSE, quote = FALSE)
+```
+
+
+
